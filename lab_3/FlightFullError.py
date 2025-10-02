@@ -1,0 +1,2 @@
+class FlightFullError(Exception):
+    pass

@@ -1,0 +1,2 @@
+class SafetyRiskError(Exception):
+    pass
