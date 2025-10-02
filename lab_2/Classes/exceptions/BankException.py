@@ -1,2 +1,0 @@
-class BankException(Exception):
-    pass
