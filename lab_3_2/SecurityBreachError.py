@@ -1,0 +1,2 @@
+class SecurityBreachError(Exception):
+    pass
