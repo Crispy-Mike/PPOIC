@@ -1,3 +1,0 @@
-
-class BookingDeniedError(Exception):
-    pass

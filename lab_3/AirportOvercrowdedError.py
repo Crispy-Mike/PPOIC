@@ -1,2 +1,0 @@
-class AirportOvercrowdedError(Exception):
-    pass

@@ -1,2 +1,0 @@
-class AgeRestrictionError(Exception):
-    pass

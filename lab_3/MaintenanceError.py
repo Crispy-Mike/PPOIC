@@ -1,2 +1,0 @@
-class MaintenanceError(Exception):
-    pass
