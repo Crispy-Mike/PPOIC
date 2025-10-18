@@ -1,0 +1,34 @@
+**Пример функции:**
+```python
+def open_business_account(self, account):
+    """Открыть бизнес-счет"""
+    self.business_accounts.append(account)
+    account.corporate_owner = self
+```
+
+**Примеры ассоциаций:**
+```python
+self.customers = []
+self.employees = []
+self.atms = []
+self.cashiers = []
+```
+
+**Полный список классов (64 класса):**
+_pycache_: ATMWithdrawal, BankAccount, BranchManager, CashWithdrawal, Currency, DataCenter, DepositContract, ExchangeRate, FingerprintScanner, InternationalTransfer, LoanContract, Mortgage, PasswordValidator, Receipt, SecuritySystem, TaxPayment, VIPClient
+
+exceptions: AuditReport, BankStatement, BusinessLoan, Contract, CurrencyExchange, DebitCard, DomesticTransfer, FacialRecognition, FraudDetector, InvestmentAdvisor, LoanOfficer, MortgageOfficer, Payment, Report, Server, Teller, Withdrawal
+
+AccessControl: AuthService, BiometricScanner, CarLoan, CorporateClient, Customer, Department, EmailNotification, FinancialAdvisor, Headquarters, Loan, Manager, NetworkAdmin, PaymentCard, SecurityCamera, SMSNotification, Transaction
+
+ATM: Bank, Branch, Cashier, CreditCard, Database, DepartmentManager, Employee, FinancialReport, InterestRate, LoanApplication, MoneyTransfer, Notification, PersonalLoan, SecurityOfficer, SystemAdmin, UtilityPayment
+
+**Исключения (12):**
+AuthenticationError, BankException, BankNotFoundError, CurrencyConversionError, CustomerNotFoundError, DepartmentFullError, EmployeeNotFoundError, InsufficientFundsError, InvalidCardError, InvalidTransactionError, LoanDeniedError, SecurityBreachError
+
+**Итого:**
+- 64 класса
+- 150 полей
+- 112 уникальных поведений
+- 31 пример ассоциации
+- 12 исключений
