@@ -15,8 +15,6 @@ self.cashiers = []
 ```
 
 **Полный список классов (64 класса):**
-_pycache_: ATMWithdrawal, BankAccount, BranchManager, CashWithdrawal, Currency, DataCenter, DepositContract, ExchangeRate, FingerprintScanner, InternationalTransfer, LoanContract, Mortgage, PasswordValidator, Receipt, SecuritySystem, TaxPayment, VIPClient
-
 exceptions: AuditReport, BankStatement, BusinessLoan, Contract, CurrencyExchange, DebitCard, DomesticTransfer, FacialRecognition, FraudDetector, InvestmentAdvisor, LoanOfficer, MortgageOfficer, Payment, Report, Server, Teller, Withdrawal
 
 AccessControl: AuthService, BiometricScanner, CarLoan, CorporateClient, Customer, Department, EmailNotification, FinancialAdvisor, Headquarters, Loan, Manager, NetworkAdmin, PaymentCard, SecurityCamera, SMSNotification, Transaction
@@ -32,3 +30,4 @@ AuthenticationError, BankException, BankNotFoundError, CurrencyConversionError, 
 - 112 уникальных поведений
 - 31 пример ассоциации
 - 12 исключений
+
