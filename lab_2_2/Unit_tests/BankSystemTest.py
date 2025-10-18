@@ -85,17 +85,17 @@ def run_tests_with_coverage():
 
     # Проверяем результат тестов
     if result.wasSuccessful():
-        print("✅ ВСЕ ТЕСТЫ ПРОЙДЕНЫ УСПЕШНО!")
+        print(" ВСЕ ТЕСТЫ ПРОЙДЕНЫ УСПЕШНО!")
     else:
-        print("❌ НЕКОТОРЫЕ ТЕСТЫ НЕ ПРОЙДЕНЫ!")
+        print(" НЕКОТОРЫЕ ТЕСТЫ НЕ ПРОЙДЕНЫ!")
         print(f"   Тестов пройдено: {result.testsRun - len(result.failures) - len(result.errors)}/{result.testsRun}")
         if result.failures:
             print(f"   Проваленных тестов: {len(result.failures)}")
         if result.errors:
             print(f"   Ошибочных тестов: {len(result.errors)}")
 
-    print(f"\n📁 HTML отчет сохранен в папке: coverage_report/")
-    print(f"📊 XML отчет сохранен в файле: coverage.xml")
+    print(f"\n HTML отчет сохранен в папке: coverage_report/")
+    print(f" XML отчет сохранен в файле: coverage.xml")
     print("=" * 70)
 
     return result.wasSuccessful()
@@ -415,4 +415,5 @@ if __name__ == '__main__':
         pass
 
     # Завершаем с соответствующим кодом выхода
+
     sys.exit(0 if success else 1)
