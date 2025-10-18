@@ -17,7 +17,7 @@ def load_module_from_file(file_path, module_name):
         spec.loader.exec_module(module)
         return module
     except Exception as e:
-        print(f"❌ Ошибка загрузки модуля {file_path}: {e}")
+        print(f" Ошибка загрузки модуля {file_path}: {e}")
         return None
 
 
@@ -32,7 +32,7 @@ def run_airline_coverage():
     )
 
     print("=" * 80)
-    print("🚀 ЗАПУСК ТЕСТОВ АВИАЦИОННОЙ СИСТЕМЫ С ПОКРЫТИЕМ")
+    print(" ЗАПУСК ТЕСТОВ АВИАЦИОННОЙ СИСТЕМЫ С ПОКРЫТИЕМ")
     print("=" * 80)
 
     # Сначала попробуем найти реальные файлы классов
@@ -57,7 +57,7 @@ def run_airline_coverage():
             class_name = filename.replace('.py', '')
             if class_name in expected_classes or class_name in expected_errors:
                 class_files[class_name] = filename
-                print(f"   ✅ Найден: {filename}")
+                print(f"    Найден: {filename}")
 
     # Если не нашли реальные файлы, создадим минимальные заглушки
     if not class_files:
@@ -69,7 +69,7 @@ def run_airline_coverage():
 
     try:
         # Запускаем тесты
-        print("\n🧪 Запуск тестов...")
+        print("\n Запуск тестов...")
 
         # Создаем тестовый модуль
         test_module = create_test_module()
@@ -433,4 +433,5 @@ def cleanup_stub_files():
 
 if __name__ == '__main__':
     success = run_airline_coverage()
+
     sys.exit(0 if success else 1)
