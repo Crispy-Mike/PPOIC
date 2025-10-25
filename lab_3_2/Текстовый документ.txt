@@ -1,0 +1,90 @@
+Вот как может выглядеть README-файл для проекта [`lab_3_2`](https://github.com/Crispy-Mike/PPOIC/tree/main/lab_3_2), оформленный в том же стиле, что и предыдущий:
+
+---
+
+# Документация по классам проекта `lab_3_2`
+
+## Общее описание
+
+В этом разделе представлены все классы, реализованные в проекте `lab_3_2`. Для каждого класса указано:
+
+- Количество **полей** (атрибутов)
+- Количество **методов**
+- **Ассоциации** с другими классами
+- **Обрабатываемые исключения** (если применимо)
+
+---
+
+## Список классов
+
+| Класс               | Поля | Методы | Ассоциации                                      | Исключения                        |
+|---------------------|------|--------|--------------------------------------------------|-----------------------------------|
+| `Accountant`        | 4    | 5      | `Payment`, `Salary`, `Invoice`, `Order`, `Driver` |                                   |
+| `Address`           | 6    | 5      | `GPSPosition`                                   |                                   |
+| `BankAccount`       | 4    | 6      |                                                  |                                   |
+| `Cargo`             | 6    | 3      |                                                  |                                   |
+| `Client`            | 3    | 6      |                                                  |                                   |
+| `CompanyFinance`    | 3    | 12     | `ExpenseTracker`, `ProfitAnalyzer`, `TaxCalculator` |                                 |
+| `CustomerService`   | 6    | 7      | `Employee`, `Client`, `Order`                   |                                   |
+| `Dispatcher`        | 4    | 5      | `Order`, `Driver`, `Vehicle`                    |                                   |
+| `Driver`            | 6    | 7      | `DrivingLicense`, `Vehicle`                     |                                   |
+| `DrivingLicense`    | 4    | 3      |                                                  |                                   |
+| `Employee`          | 8    | 4      |                                                  |                                   |
+| `ExpressDelivery`   | 12   | 11     | `Order`, `Client`, `Cargo`                      |                                   |
+| `FragileCargo`      | 8    | 8      | `Cargo`                                         |                                   |
+| `GPSPosition`       | 4    | 4      |                                                  |                                   |
+| `HRManager`         | 4    | 6      | `Employee`                                      |                                   |
+| `Insurance`         | 7    | 4      | `Vehicle`                                       |                                   |
+| `Invoice`           | 7    | 4      | `Client`, `Order`                               |                                   |
+| `LogisticsManager`  | 5    | 6      | `Employee`, `Route`, `Order`, `Warehouse`       |                                   |
+| `Machine`           | 5    | 5      | `Vehicle`                                       |                                   |
+| `MaintenanceRecord` | 7    | 3      | `Vehicle`, `Mechanic`                           |                                   |
+| `Manager`           | 5    | 6      | `Driver`, `Vehicle`, `Order`                    |                                   |
+| `Mechanic`          | 4    | 4      | `Vehicle`, `MaintenanceRecord`                  |                                   |
+| `Metrics`           | 10   | 9      | `PerformanceMetric`, `FuelConsumption`, `TrafficInfo` |                             |
+| `Order`             | 11   | 7      | `Client`, `Cargo`, `Driver`, `Vehicle`          |                                   |
+| `Payment`           | 7    | 4      | `Client`, `Order`                               |                                   |
+| `PerishableCargo`   | 9    | 8      | `Cargo`                                         |                                   |
+| `Route`             | 5    | 5      | `Address`, `GPSPosition`                        |                                   |
+| `Salary`            | 8    | 4      | `Driver`                                        |                                   |
+| `ServiceManagement` | 7    | 10     | `CustomerFeedback`, `ServiceQualityMonitor`, `LoyaltyProgram` |                        |
+| `StorageUnit`       | 8    | 7      | `StorageZone`, `Rack`                           |                                   |
+| `TrackingSystem`    | 2    | 5      | `Vehicle`, `GPSPosition`                        |                                   |
+| `Trailer`           | 9    | 6      | `Truck`                                         |                                   |
+| `TransportCompany`  | 6    | 7      | `Client`, `Driver`, `Vehicle`, `Order`          |                                   |
+| `Truck`             | 3    | 4      | `Vehicle`                                       |                                   |
+| `Van`               | 4    | 4      | `Vehicle`                                       |                                   |
+| `Vehicle`           | 8    | 6      | `Driver`, `GPSPosition`                         |                                   |
+| `Warehouse`         | 7    | 5      | `Address`, `Cargo`                              |                                   |
+| `WarehouseManager`  | 6    | 6      | `Employee`, `Warehouse`, `Cargo`, `StorageUnit` |                                   |
+
+---
+
+## Исключения (12)
+
+| Исключение                     | Поля | Методы |
+|--------------------------------|------|--------|
+| `TransportException`           | 1    | 1      |
+| `InsufficientFundsException`   | 0    | 0      |
+| `InvalidClientDataException`   | 0    | 0      |
+| `OrderNotFoundException`       | 0    | 0      |
+| `InvalidOrderDataException`    | 0    | 0      |
+| `InvalidCargoDataException`    | 0    | 0      |
+| `CargoOverweightException`     | 0    | 0      |
+| `VehicleOverloadException`     | 0    | 0      |
+| `VehicleNotAvailableException` | 0    | 0      |
+| `DriverNotAvailableException`  | 0    | 0      |
+| `InvalidLicenseException`      | 0    | 0      |
+
+---
+
+## Статистика
+
+- Всего **полей**: 193  
+- Всего **методов**: 175  
+- Всего **ассоциаций**: 67  
+- Всего **исключений**: 12  
+
+---
+
+Если хочешь, я могу дополнить этот README краткими описаниями классов, их назначением или сгенерировать файл для вставки в репозиторий. Готов продолжить?
