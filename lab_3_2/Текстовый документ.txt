@@ -1,90 +1,83 @@
-Вот как может выглядеть README-файл для проекта [`lab_3_2`](https://github.com/Crispy-Mike/PPOIC/tree/main/lab_3_2), оформленный в том же стиле, что и предыдущий:
-
----
-
-# Документация по классам проекта `lab_3_2`
-
-## Общее описание
-
-В этом разделе представлены все классы, реализованные в проекте `lab_3_2`. Для каждого класса указано:
-
-- Количество **полей** (атрибутов)
-- Количество **методов**
-- **Ассоциации** с другими классами
-- **Обрабатываемые исключения** (если применимо)
-
----
 
 ## Список классов
 
-| Класс               | Поля | Методы | Ассоциации                                      | Исключения                        |
-|---------------------|------|--------|--------------------------------------------------|-----------------------------------|
-| `Accountant`        | 4    | 5      | `Payment`, `Salary`, `Invoice`, `Order`, `Driver` |                                   |
-| `Address`           | 6    | 5      | `GPSPosition`                                   |                                   |
-| `BankAccount`       | 4    | 6      |                                                  |                                   |
-| `Cargo`             | 6    | 3      |                                                  |                                   |
-| `Client`            | 3    | 6      |                                                  |                                   |
-| `CompanyFinance`    | 3    | 12     | `ExpenseTracker`, `ProfitAnalyzer`, `TaxCalculator` |                                 |
-| `CustomerService`   | 6    | 7      | `Employee`, `Client`, `Order`                   |                                   |
-| `Dispatcher`        | 4    | 5      | `Order`, `Driver`, `Vehicle`                    |                                   |
-| `Driver`            | 6    | 7      | `DrivingLicense`, `Vehicle`                     |                                   |
-| `DrivingLicense`    | 4    | 3      |                                                  |                                   |
-| `Employee`          | 8    | 4      |                                                  |                                   |
-| `ExpressDelivery`   | 12   | 11     | `Order`, `Client`, `Cargo`                      |                                   |
-| `FragileCargo`      | 8    | 8      | `Cargo`                                         |                                   |
-| `GPSPosition`       | 4    | 4      |                                                  |                                   |
-| `HRManager`         | 4    | 6      | `Employee`                                      |                                   |
-| `Insurance`         | 7    | 4      | `Vehicle`                                       |                                   |
-| `Invoice`           | 7    | 4      | `Client`, `Order`                               |                                   |
-| `LogisticsManager`  | 5    | 6      | `Employee`, `Route`, `Order`, `Warehouse`       |                                   |
-| `Machine`           | 5    | 5      | `Vehicle`                                       |                                   |
-| `MaintenanceRecord` | 7    | 3      | `Vehicle`, `Mechanic`                           |                                   |
-| `Manager`           | 5    | 6      | `Driver`, `Vehicle`, `Order`                    |                                   |
-| `Mechanic`          | 4    | 4      | `Vehicle`, `MaintenanceRecord`                  |                                   |
-| `Metrics`           | 10   | 9      | `PerformanceMetric`, `FuelConsumption`, `TrafficInfo` |                             |
-| `Order`             | 11   | 7      | `Client`, `Cargo`, `Driver`, `Vehicle`          |                                   |
-| `Payment`           | 7    | 4      | `Client`, `Order`                               |                                   |
-| `PerishableCargo`   | 9    | 8      | `Cargo`                                         |                                   |
-| `Route`             | 5    | 5      | `Address`, `GPSPosition`                        |                                   |
-| `Salary`            | 8    | 4      | `Driver`                                        |                                   |
-| `ServiceManagement` | 7    | 10     | `CustomerFeedback`, `ServiceQualityMonitor`, `LoyaltyProgram` |                        |
-| `StorageUnit`       | 8    | 7      | `StorageZone`, `Rack`                           |                                   |
-| `TrackingSystem`    | 2    | 5      | `Vehicle`, `GPSPosition`                        |                                   |
-| `Trailer`           | 9    | 6      | `Truck`                                         |                                   |
-| `TransportCompany`  | 6    | 7      | `Client`, `Driver`, `Vehicle`, `Order`          |                                   |
-| `Truck`             | 3    | 4      | `Vehicle`                                       |                                   |
-| `Van`               | 4    | 4      | `Vehicle`                                       |                                   |
-| `Vehicle`           | 8    | 6      | `Driver`, `GPSPosition`                         |                                   |
-| `Warehouse`         | 7    | 5      | `Address`, `Cargo`                              |                                   |
-| `WarehouseManager`  | 6    | 6      | `Employee`, `Warehouse`, `Cargo`, `StorageUnit` |                                   |
+| Класс | Поля | Методы | Ассоциации | Исключения |
+|-------|------|--------|------------|------------|
+| `Aircraft` | 9 | 3 | `AircraftMaintenance`, `AircraftRental` | |
+| `AircraftMaintenance` | 7 | 2 | `Aircraft`, `Technician` | |
+| `AircraftRental` | 7 | 2 | `Aircraft`, `Airline` | |
+| `Airline` | 7 | 3 | `Passenger`, `Pilot`, `Aircraft` | |
+| `AirlineAlliance` | 5 | 2 | `Airline` | |
+| `AirlineApp` | 5 | 2 | `Passenger` | |
+| `Airport` | 8 | 2 | `Runway`, `Terminal` | |
+| `AirTrafficControl` | 7 | 3 | `Airport`, `Flight`, `Runway` | `SafetyRiskError` |
+| `Baggage` | 7 | 2 | `Passenger`, `Flight` | |
+| `BaggageHandler` | 6 | 3 | `Baggage`, `Aircraft`, `Airport` | `SafetyRiskError`, `CrewUnavailableError` |
+| `BoardingPass` | 9 | 3 | `Passenger`, `Flight` | |
+| `Booking` | 7 | 2 | `Passenger`, `Flight` | |
+| `BookingApplication` | 6 | 2 | `Passenger`, `Flight` | `BookingDeniedError` |
+| `Cargo` | 8 | 2 | `Flight`, `Sender`, `Recipient` | |
+| `CorporateBooking` | 8 | 2 | `Passenger` | |
+| `CrewScheduling` | 7 | 3 | `CrewMember`, `Flight` | `CrewUnavailableError` |
+| `CustomerService` | 7 | 3 | `Passenger` | |
+| `DocumentValidator` | 5 | 2 | | `SecurityBreachError` |
+| `EmergencyProcedure` | 6 | 2 | `Aircraft` | |
+| `FinancialDepartment` | 8 | 3 | `Employee`, `Transaction` | `InsufficientFundsError`, `PaymentProcessingError` |
+| `Flight` | 11 | 5 | `Airport`, `Aircraft`, `Passenger`, `Pilot` | `FlightFullError`, `AgeRestrictionError` |
+| `FlightAttendant` | 7 | 2 | `Airport` | |
+| `FlightChallenge` | 7 | 2 | `Passenger` | |
+| `FlightOperation` | 8 | 2 | `Pilot`, `Flight`, `CrewMember` | `CrewUnavailableError` |
+| `FlightPlan` | 7 | 2 | `Passenger`, `Flight` | |
+| `FlightReport` | 6 | 2 | `Flight` | |
+| `FlightReview` | 7 | 2 | `Passenger`, `Flight` | |
+| `FlightRoute` | 8 | 3 | `Airport`, `Aircraft` | |
+| `FlightSchedule` | 7 | 2 | `Pilot`, `Aircraft`, `Route` | `ScheduleConflictError` |
+| `FlightSimulator` | 6 | 3 | `Pilot` | |
+| `FlightTracker` | 6 | 2 | `Flight` | |
+| `FuelManagement` | 8 | 3 | `Aircraft` | `SafetyRiskError` |
+| `GroupBooking` | 7 | 2 | `Passenger`, `Flight`, `Aircraft` | `FlightFullError`, `AirportOvercrowdedError` |
+| `InFlightService` | 6 | 2 | `Flight` | |
+| `LoungeAccess` | 7 | 2 | `Passenger` | |
+| `LoyaltyProgram` | 7 | 2 | `Passenger` | |
+| `MoneyTransfer` | 7 | 2 | `PaymentAccount` | `InsufficientFundsError` |
+| `Passenger` | 11 | 5 | `Flight`, `Booking` | |
+| `Payment` | 6 | 2 | | `PaymentProcessingError` |
+| `PaymentAccount` | 6 | 6 | | `InsufficientFundsError`, `PaymentProcessingError` |
+| `Pilot` | 9 | 2 | `Airline`, `Flight` | |
+| `PilotCertification` | 7 | 2 | `Pilot` | |
+| `PromotionalOffer` | 8 | 2 | `Passenger`, `FlightRoute` | |
+| `SafetyInspection` | 6 | 2 | `Aircraft`, `Inspector` | `SafetyRiskError` |
+| `SecurityCheck` | 7 | 5 | `Passenger` | `AuthenticationError` |
+| `Transaction` | 5 | 2 | | |
+| `VIPPassenger` | 10 | 2 | | |
+| `WeatherService` | 8 | 3 | `Airport` | |
 
 ---
 
 ## Исключения (12)
 
-| Исключение                     | Поля | Методы |
-|--------------------------------|------|--------|
-| `TransportException`           | 1    | 1      |
-| `InsufficientFundsException`   | 0    | 0      |
-| `InvalidClientDataException`   | 0    | 0      |
-| `OrderNotFoundException`       | 0    | 0      |
-| `InvalidOrderDataException`    | 0    | 0      |
-| `InvalidCargoDataException`    | 0    | 0      |
-| `CargoOverweightException`     | 0    | 0      |
-| `VehicleOverloadException`     | 0    | 0      |
-| `VehicleNotAvailableException` | 0    | 0      |
-| `DriverNotAvailableException`  | 0    | 0      |
-| `InvalidLicenseException`      | 0    | 0      |
+| Исключение | Поля | Методы |
+|------------|------|--------|
+| `AgeRestrictionError` | 0 | 0 |
+| `AirportOvercrowdedError` | 0 | 0 |
+| `AuthenticationError` | 0 | 0 |
+| `BookingDeniedError` | 0 | 0 |
+| `CrewUnavailableError` | 0 | 0 |
+| `FlightFullError` | 0 | 0 |
+| `InsufficientFundsError` | 0 | 0 |
+| `PaymentProcessingError` | 0 | 0 |
+| `SafetyRiskError` | 0 | 0 |
+| `ScheduleConflictError` | 0 | 0 |
+| `SecurityBreachError` | 0 | 0 |
 
 ---
 
 ## Статистика
 
-- Всего **полей**: 193  
-- Всего **методов**: 175  
-- Всего **ассоциаций**: 67  
-- Всего **исключений**: 12  
+- Всего **классов**: 48
+- Всего **полей**: 317
+- Всего **методов**: 127
+- Всего **ассоциаций**: 89
+- Всего **исключений**: 12
 
 ---
-
-Если хочешь, я могу дополнить этот README краткими описаниями классов, их назначением или сгенерировать файл для вставки в репозиторий. Готов продолжить?
