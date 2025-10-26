@@ -1,98 +1,103 @@
-Отлично, ты хочешь README-файл, в котором будет систематизировано описание всех классов из проекта на GitHub, включая:
-
-- Название класса
-- Количество полей и методов
-- Ассоциации с другими классами
-- Исключения, если есть
-
-Вот шаблон README-файла, оформленный в стиле, который ты указал:
-
----
-
-# Документация по классам проекта `lab_2_2`
-
-##  Общее описание
-
-Данный документ содержит описание всех классов, реализованных в проекте `lab_2_2`. Для каждого класса указаны:
-
-- Количество **полей** (атрибутов)
-- Количество **методов**
-- **Ассоциации** с другими классами
-- **Обрабатываемые исключения** (если применимо)
-
----
 
 ## Список классов
 
-| Класс               | Поля | Методы | Ассоциации                                      | Исключения                        |
-|---------------------|------|--------|--------------------------------------------------|-----------------------------------|
-| `Accountant`        | 4    | 5      | `Payment`, `Salary`, `Invoice`, `Order`, `Driver` |                                   |
-| `Address`           | 6    | 5      | `GPSPosition`                                   |                                   |
-| `BankAccount`       | 4    | 6      |                                                  |                                   |
-| `Cargo`             | 6    | 3      |                                                  |                                   |
-| `Client`            | 3    | 6      |                                                  |                                   |
-| `CompanyFinance`    | 3    | 12     | `ExpenseTracker`, `ProfitAnalyzer`, `TaxCalculator` |                                 |
-| `CustomerService`   | 6    | 7      | `Employee`, `Client`, `Order`                   |                                   |
-| `Dispatcher`        | 4    | 5      | `Order`, `Driver`, `Vehicle`                    |                                   |
-| `Driver`            | 6    | 7      | `DrivingLicense`, `Vehicle`                     |                                   |
-| `DrivingLicense`    | 4    | 3      |                                                  |                                   |
-| `Employee`          | 8    | 4      |                                                  |                                   |
-| `ExpressDelivery`   | 12   | 11     | `Order`, `Client`, `Cargo`                      |                                   |
-| `FragileCargo`      | 8    | 8      | `Cargo`                                         |                                   |
-| `GPSPosition`       | 4    | 4      |                                                  |                                   |
-| `HRManager`         | 4    | 6      | `Employee`                                      |                                   |
-| `Insurance`         | 7    | 4      | `Vehicle`                                       |                                   |
-| `Invoice`           | 7    | 4      | `Client`, `Order`                               |                                   |
-| `LogisticsManager`  | 5    | 6      | `Employee`, `Route`, `Order`, `Warehouse`       |                                   |
-| `Machine`           | 5    | 5      | `Vehicle`                                       |                                   |
-| `MaintenanceRecord` | 7    | 3      | `Vehicle`, `Mechanic`                           |                                   |
-| `Manager`           | 5    | 6      | `Driver`, `Vehicle`, `Order`                    |                                   |
-| `Mechanic`          | 4    | 4      | `Vehicle`, `MaintenanceRecord`                  |                                   |
-| `Metrics`           | 10   | 9      | `PerformanceMetric`, `FuelConsumption`, `TrafficInfo` |                             |
-| `Order`             | 11   | 7      | `Client`, `Cargo`, `Driver`, `Vehicle`          |                                   |
-| `Payment`           | 7    | 4      | `Client`, `Order`                               |                                   |
-| `PerishableCargo`   | 9    | 8      | `Cargo`                                         |                                   |
-| `Route`             | 5    | 5      | `Address`, `GPSPosition`                        |                                   |
-| `Salary`            | 8    | 4      | `Driver`                                        |                                   |
-| `ServiceManagement` | 7    | 10     | `CustomerFeedback`, `ServiceQualityMonitor`, `LoyaltyProgram` |                        |
-| `StorageUnit`       | 8    | 7      | `StorageZone`, `Rack`                           |                                   |
-| `TrackingSystem`    | 2    | 5      | `Vehicle`, `GPSPosition`                        |                                   |
-| `Trailer`           | 9    | 6      | `Truck`                                         |                                   |
-| `TransportCompany`  | 6    | 7      | `Client`, `Driver`, `Vehicle`, `Order`          |                                   |
-| `Truck`             | 3    | 4      | `Vehicle`                                       |                                   |
-| `Van`               | 4    | 4      | `Vehicle`                                       |                                   |
-| `Vehicle`           | 8    | 6      | `Driver`, `GPSPosition`                         |                                   |
-| `Warehouse`         | 7    | 5      | `Address`, `Cargo`                              |                                   |
-| `WarehouseManager`  | 6    | 6      | `Employee`, `Warehouse`, `Cargo`, `StorageUnit` |                                   |
+| Класс | Поля | Методы | Ассоциации | Исключения |
+|-------|------|--------|------------|------------|
+| `AccessControl` | 5 | 2 | `SecuritySystem`, `User` | `SecurityBreachError` |
+| `ATM` | 6 | 2 | `Branch`, `Withdrawal` | `InsufficientFundsError` |
+| `ATMWithdrawal` | 7 | 2 | `Withdrawal`, `Account`, `ATM` | |
+| `AuditReport` | 6 | 3 | `Report`, `Auditor` | |
+| `AuthService` | 7 | 2 | `SecuritySystem` | `AuthenticationError` |
+| `Bank` | 13 | 5 | `Branch`, `Department`, `Customer`, `Employee`, `Currency` | |
+| `BankAccount` | 9 | 4 | `Customer`, `CorporateClient`, `Currency` | `InvalidTransactionError`, `InsufficientFundsError` |
+| `BankStatement` | 7 | 2 | `BankAccount`, `Transaction` | |
+| `BiometricScanner` | 4 | 2 | | |
+| `Branch` | 7 | 2 | `Bank`, `ATM`, `Customer`, `Employee` | |
+| `BranchManager` | 9 | 5 | `Manager`, `Branch`, `LoanApplication` | |
+| `BusinessLoan` | 8 | 2 | `Loan`, `Customer` | |
+| `CarLoan` | 8 | 2 | `Loan`, `Customer` | |
+| `Cashier` | 5 | 2 | `Employee`, `Transaction` | |
+| `CashWithdrawal` | 6 | 2 | `Withdrawal`, `Account`, `Branch` | |
+| `Contract` | 6 | 2 | `Parties` | |
+| `CorporateClient` | 9 | 3 | `Customer`, `BankAccount` | |
+| `CreditCard` | 9 | 3 | `PaymentCard` | `InvalidTransactionError` |
+| `Currency` | 4 | 3 | | |
+| `CurrencyExchange` | 7 | 2 | `Transaction`, `Account`, `Currency` | |
+| `Customer` | 10 | 4 | `BankAccount`, `PaymentCard`, `Loan` | `LoanDeniedError` |
+| `Database` | 2 | 2 | | |
+| `DataCenter` | 6 | 2 | `Server`, `Employee` | |
+| `DebitCard` | 8 | 2 | `PaymentCard` | |
+| `Department` | 5 | 2 | `Employee`, `DepartmentManager` | `BankException` |
+| `DepartmentManager` | 7 | 2 | `Manager`, `Department` | |
+| `DepositContract` | 8 | 2 | `Contract` | |
+| `DomesticTransfer` | 7 | 2 | `MoneyTransfer`, `Bank` | |
+| `EmailNotification` | 5 | 2 | `Notification` | |
+| `Employee` | 8 | 3 | `Department`, `Branch` | |
+| `ExchangeRate` | 4 | 3 | `Currency` | |
+| `FacialRecognition` | 6 | 2 | `BiometricScanner` | |
+| `FinancialAdvisor` | 7 | 2 | `Employee`, `Client` | |
+| `FinancialReport` | 7 | 3 | `Report` | |
+| `FingerprintScanner` | 6 | 2 | `BiometricScanner` | |
+| `FraudDetector` | 6 | 2 | `SecuritySystem`, `Transaction` | `SecurityBreachError` |
+| `Headquarters` | 6 | 2 | `Bank`, `Employee` | `DepartmentFullError` |
+| `InterestRate` | 4 | 2 | | |
+| `InternationalTransfer` | 8 | 3 | `MoneyTransfer`, `Bank` | |
+| `InvestmentAdvisor` | 9 | 2 | `FinancialAdvisor` | |
+| `Loan` | 8 | 3 | `Customer` | `InvalidTransactionError` |
+| `LoanApplication` | 8 | 3 | `Customer` | `LoanDeniedError` |
+| `LoanContract` | 8 | 2 | `Contract`, `Loan` | |
+| `LoanOfficer` | 7 | 2 | `Employee`, `LoanApplication` | |
+| `Manager` | 7 | 2 | `Employee` | |
+| `MoneyTransfer` | 7 | 2 | `Transaction`, `Account` | `InsufficientFundsError` |
+| `Mortgage` | 9 | 2 | `Loan`, `Customer` | |
+| `MortgageOfficer` | 9 | 2 | `LoanOfficer` | |
+| `NetworkAdmin` | 9 | 2 | `SystemAdmin` | |
+| `Notification` | 5 | 2 | | |
+| `PasswordValidator` | 6 | 2 | `SecuritySystem` | `SecurityBreachError` |
+| `Payment` | 7 | 2 | `Transaction`, `Account` | |
+| `PaymentCard` | 11 | 5 | `BankAccount` | `SecurityBreachError`, `InsufficientFundsError`, `InvalidCardError` |
+| `PersonalLoan` | 7 | 2 | `Loan`, `Customer` | |
+| `Receipt` | 6 | 2 | `Transaction` | |
+| `Report` | 4 | 2 | | |
+| `SecurityCamera` | 5 | 2 | | |
+| `SecurityOfficer` | 7 | 2 | `Employee` | |
+| `SecuritySystem` | 5 | 2 | | |
+| `Server` | 6 | 2 | `DataCenter` | |
+| `SMSNotification` | 5 | 2 | `Notification` | |
+| `SystemAdmin` | 7 | 2 | `Employee` | |
+| `TaxPayment` | 9 | 2 | `Payment` | |
+| `Teller` | 7 | 2 | `Cashier` | |
+| `Transaction` | 6 | 2 | | |
+| `UtilityPayment` | 8 | 2 | `Payment` | |
+| `VIPClient` | 28 | 14 | `Customer`, `FinancialAdvisor` | `ValueError` |
+| `Withdrawal` | 18 | 10 | `Transaction`, `Account` | `ValueError` |
 
 ---
 
-## Исключения (12)
+## Исключения (14)
 
-| Исключение                     | Поля | Методы |
-|--------------------------------|------|--------|
-| `TransportException`           | 1    | 1      |
-| `InsufficientFundsException`   | 0    | 0      |
-| `InvalidClientDataException`   | 0    | 0      |
-| `OrderNotFoundException`       | 0    | 0      |
-| `InvalidOrderDataException`    | 0    | 0      |
-| `InvalidCargoDataException`    | 0    | 0      |
-| `CargoOverweightException`     | 0    | 0      |
-| `VehicleOverloadException`     | 0    | 0      |
-| `VehicleNotAvailableException` | 0    | 0      |
-| `DriverNotAvailableException`  | 0    | 0      |
-| `InvalidLicenseException`      | 0    | 0      |
-
----
-
-##  Статистика
-
-- Всего **полей**: 193  
-- Всего **методов**: 175  
-- Всего **ассоциаций**: 67  
-- Всего **исключений**: 12  
+| Исключение | Поля | Методы |
+|------------|------|--------|
+| `AuthenticationError` | 0 | 0 |
+| `BankException` | 0 | 0 |
+| `BankNotFoundError` | 0 | 0 |
+| `CurrencyConversionError` | 0 | 0 |
+| `CustomerNotFoundError` | 0 | 0 |
+| `DepartmentFullError` | 0 | 0 |
+| `EmployeeNotFoundError` | 0 | 0 |
+| `InsufficientFundsError` | 0 | 0 |
+| `InvalidCardError` | 0 | 0 |
+| `InvalidTransactionError` | 0 | 0 |
+| `LoanDeniedError` | 0 | 0 |
+| `SecurityBreachError` | 0 | 0 |
 
 ---
 
-Если хочешь, я могу сгенерировать этот README в виде файла или дополнить его краткими описаниями классов и их назначением. Хочешь?
+## Статистика
 
+- Всего **полей**: 354  
+- Всего **методов**: 176  
+- Всего **ассоциаций**: 98  
+- Всего **исключений**: 14  
+
+---
