@@ -1,8 +1,16 @@
 from Global_variables import DAYS, TIME_OF_CLASSES
-
+from exceptions.empty_name_error import EmptyNameError
+from exceptions.invalid_mark_error import InvalidMarkError
+from exceptions.visit_not_marked_error import VisitNotMarkedError
+from exceptions.invalid_menu_choice_error import InvalidMenuChoiceError
+from exceptions.day_not_found_error import DayNotFoundError
 
 class Student:
     def __init__(self, name, surname, group, specialty):
+        if not name or not name.strip():
+            raise EmptyNameError("имя")
+        if not surname or not surname.strip():
+            raise EmptyNameError("фамилия")
         self.name = name
         self.surname = surname
         self.group = group
@@ -13,7 +21,7 @@ class Student:
         self.schedule = {}
         self.visits = {}
         self.marks = {}
-        self.marks_of_materials={}
+        self.marks_of_materials = {}
 
     def get_information(self):
         print("-" * 100)
@@ -74,51 +82,48 @@ class Student:
                     print(f"{time:15} - нет пары")
 
     def new_visit(self):
-
         self.get_schedule()
 
-
         for day in DAYS:
+            try:
+                if day not in self.schedule:
+                    raise DayNotFoundError(day)
 
-            if day not in self.schedule:
-                print(f"\n Нет расписания на {day}")
+                day_schedule = self.schedule[day]
+                day_visit = []
+
+                for class_day in day_schedule:
+                    if class_day == "-":
+                        day_visit.append("нет пары")
+                        continue
+                    else:
+                        while True:
+                            try:
+                                print(f"\n Предмет: {class_day}")
+                                print(f" Студент: {self.name} {self.surname}")
+                                answer = input("Был на паре? (1-да, 2-нет): ").strip()
+
+                                if answer in ["1", "да"]:
+                                    day_visit.append("+")
+                                    print(" Отмечено: был")
+                                    break
+                                elif answer in ["2", "нет"]:
+                                    day_visit.append("-")
+                                    print(" Отмечено: не был")
+                                    break
+                                else:
+                                    raise InvalidMenuChoiceError(answer, "1/да или 2/нет")
+                            except InvalidMenuChoiceError as e:
+                                print(f" Ошибка: {e}")
+
+                self.visits[day] = day_visit
+                print(f" Посещения за {day} сохранены")
+
+            except DayNotFoundError as e:
+                print(f"\n Ошибка: {e}")
+                print(" Сначала добавьте расписание!")
                 input("Нажмите Enter для продолжения...")
                 continue
-
-
-            day_schedule = self.schedule[day]
-
-            day_visit = []
-
-
-            for class_day in day_schedule:
-
-                if class_day == "-":
-                    day_visit.append("нет пары")
-                    continue
-
-                else:
-                    while True:
-                        print(f"\n Предмет: {class_day}")
-                        print(f" Студент: {self.name} {self.surname}")
-                        answer = input("Был на паре? (1-да, 2-нет): ").strip()
-
-                        if answer in ["1", "да"]:
-                            day_visit.append("+")
-                            print(" Отмечено: был")
-                            break
-
-                        elif answer in ["2", "нет"]:
-                            day_visit.append("-")
-                            print(" Отмечено: не был")
-                            break
-
-                        else:
-                            print(" Неправильный ввод! Введите 1/да или 2/нет")
-
-            self.visits[day] = day_visit
-            print(f" Посещения за {day} сохранены")
-
 
         print("\n" + "=" * 50)
         print(" ИТОГОВАЯ СТАТИСТИКА ПОСЕЩАЕМОСТИ:")
@@ -166,61 +171,73 @@ class Student:
             print(f"Процент: {(visits / max_visits * 100):.1f}%")
 
     def new_marks(self):
-        if not self.visits:
-            print("Сначала расставьте посещения!")
-            input("Нажмите Enter...")
-            return
+        try:
+            if not self.visits:
+                raise VisitNotMarkedError()
 
-        if self.marks:
-            while True:
-                answer = input("Уже есть оценки. Перезаписать? (1-да, 2-нет): ").strip()
-                if answer in ["1", "да"]:
-                    break
-                elif answer in ["2", "нет"]:
-                    return
-                else:
-                    print("Неправильный ввод! Введите 1 или 2")
-        else:
-            print("Ставим новые оценки...")
+            if self.marks:
+                while True:
+                    try:
+                        answer = input("Уже есть оценки. Перезаписать? (1-да, 2-нет): ").strip()
+                        if answer in ["1", "да"]:
+                            break
+                        elif answer in ["2", "нет"]:
+                            return
+                        else:
+                            raise InvalidMenuChoiceError(answer, "1/да или 2/нет")
+                    except InvalidMenuChoiceError as e:
+                        print(f" Ошибка: {e}")
+            else:
+                print("Ставим новые оценки...")
 
-        self.get_visit()
+            self.get_visit()
 
-        for day in DAYS:
-            day_schedule = self.schedule.get(day, [])
-            day_visit = self.visits.get(day, [])
+            for day in DAYS:
+                day_schedule = self.schedule.get(day, [])
+                day_visit = self.visits.get(day, [])
 
-            if not day_schedule or not day_visit:
-                continue
-
-            day_mark = ["-"] * len(TIME_OF_CLASSES)
-
-            for index, class_day in enumerate(day_schedule):
-                if day_visit[index] != "+":
+                if not day_schedule or not day_visit:
                     continue
 
-                while True:
-                    ans = input(f"Урок '{class_day}' ({TIME_OF_CLASSES[index]}): отметка? (1-да, 2-нет): ").strip()
-                    if ans in ["1", "да"]:
-                        while True:
-                            try:
-                                mark = int(input("Отметка (1-10): ").strip())
-                                if 1 <= mark <= 10:
-                                    day_mark[index] = mark
-                                    print(f"Поставлено: {mark}")
-                                    break
-                                print("Только 1-10!")
-                            except ValueError:
-                                print("Введите число!")
-                        break
-                    elif ans in ["2", "нет"]:
-                        break
-                    else:
-                        print("Введите 1 (да) или 2 (нет)!")
+                day_mark = ["-"] * len(TIME_OF_CLASSES)
 
-            self.marks[day] = day_mark
+                for index, class_day in enumerate(day_schedule):
+                    if day_visit[index] != "+":
+                        continue
 
-        print("\n Оценки сохранены!")
-        self.get_marks()
+                    while True:
+                        try:
+                            ans = input(f"Урок '{class_day}' ({TIME_OF_CLASSES[index]}): отметка? (1-да, 2-нет): ").strip()
+                            if ans in ["1", "да"]:
+                                while True:
+                                    try:
+                                        mark = int(input("Отметка (1-10): ").strip())
+                                        if 1 <= mark <= 10:
+                                            day_mark[index] = mark
+                                            print(f"Поставлено: {mark}")
+                                            break
+                                        else:
+                                            raise InvalidMarkError(mark)
+                                    except ValueError:
+                                        print(" Ошибка: Введите число!")
+                                    except InvalidMarkError as e:
+                                        print(f" Ошибка: {e}")
+                                break
+                            elif ans in ["2", "нет"]:
+                                break
+                            else:
+                                raise InvalidMenuChoiceError(ans, "1/да или 2/нет")
+                        except InvalidMenuChoiceError as e:
+                            print(f" Ошибка: {e}")
+
+                self.marks[day] = day_mark
+
+            print("\n Оценки сохранены!")
+            self.get_marks()
+
+        except VisitNotMarkedError as e:
+            print(f"\n Ошибка: {e}")
+            input("Нажмите Enter для продолжения...")
 
     def get_marks(self):
         if not self.marks:
@@ -266,7 +283,4 @@ class Student:
                 print(f" {material}: нет оценок")
             print()
 
-
         return self.marks_of_materials
-
-

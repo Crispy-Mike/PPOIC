@@ -1,0 +1,74 @@
+@startuml
+title Диаграмма классов - Модель студента
+
+class Student {
+    - name: str
+    - surname: str
+    - group: str
+    - specialty: str
+    - educational_materials: List[str]
+    - exams: List[str]
+    - schedule: Dict[str, List[str]]
+    - visits: Dict[str, List[str]]
+    - marks: Dict[str, List[int]]
+    - books: List[Book]
+    --
+    + get_information(): None
+    + get_schedule(): None
+    + new_visit(): None
+    + get_visit(): None
+    + new_marks(): None
+    + get_marks(): None
+    + exam_check(): Dict
+}
+
+class Book {
+    - name_of_book: str
+    - name_of_author: str
+    - genre: str
+    - content: str
+    --
+    + __init__(name, author, genre, content)
+}
+
+class Library {
+    - books: List[Book]
+    --
+    + new_book(): None
+    + redact(name, author): None
+    + delete_book(name, author): None
+}
+
+class AllStudents {
+    - students: List[Student]
+    - library: Library
+    --
+    + new_student(): None
+    + delete_student(): None
+    + redact_student(): None
+    + save_data(filename: str): None
+    + load_data(filename: str): None
+    + clear_data(): None
+    + visit_of_last_week(): None
+    + material_study_operation(): None
+    + exam_preparation_operation(): None
+    + curricular_planning_operation(): None
+    + operation_of_using_library_resources(): None
+    + new_book(): None
+}
+
+class GlobalVariables {
+    + {static} DAYS: List[str]
+    + {static} TIME_OF_CLASSES: List[str]
+}
+
+AllStudents "1" *-- "0..*" Student : содержит
+AllStudents "1" *-- "1" Library : управляет
+Library "1" o-- "0..*" Book : хранит
+Student "1" --> "0..*" Book : берет
+Student ..> GlobalVariables : использует
+Library ..> GlobalVariables : использует
+
+note top of Student : Основная сущность системы
+note right of AllStudents : Контроллер системы
+@enduml
