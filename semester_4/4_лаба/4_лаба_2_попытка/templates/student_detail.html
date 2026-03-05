@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}{{ student.name }} {{ student.surname }}{% endblock %}
+
+{% block content %}
+<h1>{{ student.name }} {{ student.surname }}</h1>
+
+<div class="student-info">
+    <p><strong>Группа:</strong> {{ student.group }}</p>
+    <p><strong>Специальность:</strong> {{ student.specialty }}</p>
+</div>
+
+<div class="action-buttons">
+    <a href="{{ url_for('edit_student', student_id=student_id) }}" class="btn btn-warning">✏️ Редактировать</a>
+    <a href="{{ url_for('manage_visit', student_id=student_id) }}" class="btn btn-success">📊 Посещаемость</a>
+    <a href="{{ url_for('manage_marks', student_id=student_id) }}" class="btn btn-info">📝 Оценки</a>
+    <a href="{{ url_for('edit_schedule', student_id=student_id) }}" class="btn btn-primary">📅 Расписание</a>
+</div>
+
+<h2>Учебные материалы</h2>
+<ul>
+    {% for material in student.educational_materials %}
+    <li>{{ material }}</li>
+    {% else %}
+    <li>Нет материалов</li>
+    {% endfor %}
+</ul>
+
+<h2>Экзамены</h2>
+<ul>
+    {% for exam in student.exams %}
+    <li>{{ exam }}</li>
+    {% else %}
+    <li>Нет экзаменов</li>
+    {% endfor %}
+</ul>
+
+<h2>Книги</h2>
+<ul>
+    {% for book in student.books %}
+    <li>{{ book.name_of_book }} - {{ book.name_of_author }} ({{ book.genre }})</li>
+    {% else %}
+    <li>Нет книг</li>
+    {% endfor %}
+</ul>
+
+<h2>Расписание</h2>
+<div class="schedule-grid">
+    <div class="schedule-header">Время</div>
+    {% for day in days %}
+    <div class="schedule-header">{{ day }}</div>
+    {% endfor %}
+    
+    {% for time in time_slots %}
+    <div class="schedule-cell time">{{ time }}</div>
+    {% for day in days %}
+    <div class="schedule-cell">
+        {{ student.schedule.get(day, ['-'] * loop.parent.loop.index0)[loop.parent.loop.index0] }}
+    </div>
+    {% endfor %}
+    {% endfor %}
+</div>
+
+<h2>Посещаемость</h2>
+{% if student.visits %}
+<div class="schedule-grid">
+    <div class="schedule-header">Время</div>
+    {% for day in days %}
+    <div class="schedule-header">{{ day }}</div>
+    {% endfor %}
+    
+    {% for time in time_slots %}
+    <div class="schedule-cell time">{{ time }}</div>
+    {% for day in days %}
+    <div class="schedule-cell">
+        {% set day_visits = student.visits.get(day, []) %}
+        {% if day_visits and loop.parent.loop.index0 < day_visits|length %}
+            {% if day_visits[loop.parent.loop.index0] == '+' %}
+                <span style="color: green;">✓</span>
+            {% elif day_visits[loop.parent.loop.index0] == '-' %}
+                <span style="color: red;">✗</span>
+            {% else %}
+                -
+            {% endif %}
+        {% else %}
+            -
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% endfor %}
+</div>
+{% else %}
+<p>Посещаемость не отмечена</p>
+{% endif %}
+
+<h2>Оценки</h2>
+{% if student.marks %}
+<div class="schedule-grid">
+    <div class="schedule-header">Время</div>
+    {% for day in days %}
+    <div class="schedule-header">{{ day }}</div>
+    {% endfor %}
+    
+    {% for time in time_slots %}
+    <div class="schedule-cell time">{{ time }}</div>
+    {% for day in days %}
+    <div class="schedule-cell">
+        {% set day_marks = student.marks.get(day, []) %}
+        {% if day_marks and loop.parent.loop.index0 < day_marks|length %}
+            {{ day_marks[loop.parent.loop.index0] }}
+        {% else %}
+            -
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% endfor %}
+</div>
+{% else %}
+<p>Оценки не выставлены</p>
+{% endif %}
+
+<a href="{{ url_for('students_list') }}" class="btn">← Назад к списку</a>
+{% endblock %}
