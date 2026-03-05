@@ -1,10 +1,99 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-</body>
-</html>
+{% block title %}Оценки: {{ student.name }} {{ student.surname }}{% endblock %}
+
+{% block content %}
+<h1>Выставление оценок</h1>
+<h2>{{ student.name }} {{ student.surname }} ({{ student.group }})</h2>
+
+{% if not student.visits %}
+<div class="alert alert-warning">
+    ⚠️ Сначала нужно отметить посещаемость!
+    <a href="{{ url_for('manage_visit', student_id=student_id) }}" class="btn btn-sm btn-warning">Отметить посещаемость</a>
+</div>
+{% else %}
+
+<form method="POST" class="marks-form">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Время</th>
+                {% for day in days %}
+                <th>{{ day }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for time in time_slots %}
+            <tr>
+                <td>{{ time }}</td>
+                {% for day in days %}
+                <td>
+                    {% set day_schedule = student.schedule.get(day, []) %}
+                    {% set day_visits = student.visits.get(day, []) %}
+                    
+                    {% if day_schedule and loop.index0 < day_schedule|length and day_schedule[loop.index0] != '-' %}
+                        {% if day_visits and loop.index0 < day_visits|length and day_visits[loop.index0] == '+' %}
+                            <input type="number" name="mark_{{ day }}_{{ loop.parent.index0 }}" 
+                                   min="1" max="10" step="1"
+                                   value="{% if student.marks.get(day, []) and loop.parent.index0 < student.marks[day]|length %}{{ student.marks[day][loop.parent.index0] }}{% endif %}"
+                                   placeholder="1-10"
+                                   class="mark-input">
+                            <small>{{ day_schedule[loop.parent.index0] }}</small>
+                        {% elif day_visits and loop.index0 < day_visits|length and day_visits[loop.index0] == '-' %}
+                            <span class="absent">❌ Не был</span>
+                            <input type="hidden" name="mark_{{ day }}_{{ loop.parent.index0 }}" value="">
+                        {% else %}
+                            <span class="not-marked">⚠️ Не отмечено</span>
+                            <input type="hidden" name="mark_{{ day }}_{{ loop.parent.index0 }}" value="">
+                        {% endif %}
+                    {% else %}
+                        <span class="no-class">-</span>
+                        <input type="hidden" name="mark_{{ day }}_{{ loop.parent.index0 }}" value="">
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn btn-success">Сохранить оценки</button>
+        <a href="{{ url_for('student_detail', student_id=student_id) }}" class="btn">Отмена</a>
+    </div>
+</form>
+
+{% endif %}
+
+<style>
+.mark-input {
+    width: 60px;
+    text-align: center;
+}
+.absent {
+    color: #dc3545;
+    font-weight: bold;
+}
+.not-marked {
+    color: #ffc107;
+    font-weight: bold;
+}
+.no-class {
+    color: #999;
+    font-style: italic;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+th {
+    background-color: #f2f2f2;
+}
+</style>
+{% endblock %}

@@ -1,10 +1,68 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-</body>
-</html>
+{% block title %}Добавление студента{% endblock %}
+
+{% block content %}
+<h1>Добавление нового студента</h1>
+
+<form method="POST" class="student-form">
+    <div class="form-group">
+        <label for="name">Имя:</label>
+        <input type="text" id="name" name="name" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="surname">Фамилия:</label>
+        <input type="text" id="surname" name="surname" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="group">Группа:</label>
+        <input type="text" id="group" name="group" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="specialty">Специальность:</label>
+        <input type="text" id="specialty" name="specialty" required>
+    </div>
+    
+    <h3>Учебные предметы</h3>
+    <div id="materials-container">
+        <div class="form-group">
+            <input type="text" name="materials[]" placeholder="Предмет 1">
+        </div>
+    </div>
+    <button type="button" onclick="addMaterial()" class="btn btn-sm">➕ Добавить предмет</button>
+    
+    <h3>Экзамены</h3>
+    <div id="exams-container">
+        <div class="form-group">
+            <input type="text" name="exams[]" placeholder="Экзамен 1">
+        </div>
+    </div>
+    <button type="button" onclick="addExam()" class="btn btn-sm">➕ Добавить экзамен</button>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn btn-success">Сохранить</button>
+        <a href="{{ url_for('students_list') }}" class="btn">Отмена</a>
+    </div>
+</form>
+
+<script>
+function addMaterial() {
+    const container = document.getElementById('materials-container');
+    const div = document.createElement('div');
+    div.className = 'form-group';
+    div.innerHTML = '<input type="text" name="materials[]" placeholder="Предмет">';
+    container.appendChild(div);
+}
+
+function addExam() {
+    const container = document.getElementById('exams-container');
+    const div = document.createElement('div');
+    div.className = 'form-group';
+    div.innerHTML = '<input type="text" name="exams[]" placeholder="Экзамен">';
+    container.appendChild(div);
+}
+</script>
+{% endblock %}

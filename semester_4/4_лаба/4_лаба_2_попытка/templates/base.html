@@ -1,10 +1,40 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Система управления студентами{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-$END$
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="navbar-brand"> Студенческая система</a>
+            <ul class="nav-menu">
+                <li><a href="/">Главная</a></li>
+                <li><a href="/students">Студенты</a></li>
+                <li><a href="/library">Библиотека</a></li>
+                <li><a href="/save_data">💾 Сохранить</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2024 Лабораторная работа №4 - Веб-интерфейс для модели студента</p>
+        </div>
+    </footer>
 </body>
 </html>

@@ -1,10 +1,61 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Главная - Система управления студентами{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>Добро пожаловать в систему управления студентами</h1>
+    <p>Веб-интерфейс для модели студента (лабораторная работа №4)</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3>Cтуденты</h3>
+        <p class="stat-number">{{ students_count }}</p>
+        <a href="/students" class="btn">Управление</a>
+    </div>
+    
+    <div class="stat-card">
+        <h3>Книги в библиотеке</h3>
+        <p class="stat-number">{{ books_count }}</p>
+        <a href="/library" class="btn">Библиотека</a>
+    </div>
+</div>
+
+<div class="action-grid">
+    <div class="action-card">
+        <h3>Добавить студента</h3>
+        <p>Добавление нового студента в систему</p>
+        <a href="/student/add" class="btn btn-primary">Добавить</a>
+    </div>
+    
+    <div class="action-card">
+        <h3>Просмотр студентов</h3>
+        <p>Список всех студентов и их данные</p>
+        <a href="/students" class="btn btn-primary">Перейти</a>
+    </div>
+    
+    <div class="action-card">
+        <h3>Посещаемость</h3>
+        <p>Отметка посещений и просмотр статистики</p>
+        <a href="/students" class="btn btn-primary">Выбрать студента</a>
+    </div>
+    
+    <div class="action-card">
+        <h3>Оценки</h3>
+        <p>Выставление и просмотр оценок</p>
+        <a href="/students" class="btn btn-primary">Выбрать студента</a>
+    </div>
+</div>
+
+<div class="cli-info">
+    <h3>Информация</h3>
+    <p>CLI версия программы также доступна в папке <code>common/</code></p>
+    <p>Для запуска CLI: <code>python common/main.py</code></p>
+</div>
+
+<form action="/clear_data" method="POST" class="danger-zone" onsubmit="return confirm('Вы уверены? Это удалит ВСЕ данные!');">
+    <input type="hidden" name="confirm" value="да">
+    <button type="submit" class="btn btn-danger">🗑️ Очистить все данные</button>
+</form>
+{% endblock %}

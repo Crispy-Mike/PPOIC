@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="1a7f1803-b95c-4103-95d0-3017b1cf8260" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../4_лаба/4_лаба_2_попытка/app.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../4_лаба/4_лаба_2_попытка/requirements" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../4_лаба/4_лаба_2_попытка/requirements.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../4_лаба/4_лаба_2_попытка/static/style.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../4_лаба/4_лаба_2_попытка/templates/404.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../4_лаба/4_лаба_2_попытка/templates/add_student.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../4_лаба/4_лаба_2_попытка/templates/base.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../4_лаба/4_лаба_2_попытка/templates/edit_student.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../4_лаба/4_лаба_2_попытка/templates/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../4_лаба/4_лаба_2_попытка/templates/library.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../4_лаба/4_лаба_2_попытка/templates/marks.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../4_лаба/4_лаба_2_попытка/templates/schedule.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../4_лаба/4_лаба_2_попытка/templates/student_detail.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../4_лаба/4_лаба_2_попытка/templates/students.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../4_лаба/4_лаба_2_попытка/templates/visit.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../PythonProject/django_training/main/urls.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../PythonProject/django_training/templates/greet.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../PythonProject/django_training/templates/main/main.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../PythonProject/django_training/templates/tasks_list.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../PythonProject1/my_site_2/main/urls.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_first/urls.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/my_first.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../3_лаба/GameManager.py" beforeDir="false" afterPath="$PROJECT_DIR$/../3_лаба/GameManager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../3_лаба/WORDS_BY_LENGTH.py" beforeDir="false" afterPath="$PROJECT_DIR$/../3_лаба/WORDS_BY_LENGTH.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../3_лаба/hangman.db" beforeDir="false" afterPath="$PROJECT_DIR$/../3_лаба/hangman.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../3_лаба/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/../3_лаба/main.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+        <option value="HTML File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 2
+}]]></component>
+  <component name="ProjectId" id="3AT68a4JQ46ZfzN74Ap2tOseRMe" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-598b0484d0b5-e2d783800521-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-251.26927.74" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="1a7f1803-b95c-4103-95d0-3017b1cf8260" name="Changes" comment="" />
+      <created>1772604054911</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1772604054911</updated>
+    </task>
+    <servers />
+  </component>
+</project>

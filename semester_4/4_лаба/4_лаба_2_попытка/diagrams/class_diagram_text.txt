@@ -1,0 +1,88 @@
+
+Диаграмма классов (текстовое описание):
+
+┌─────────────────────────────────┐
+│           AllStudents           │
+├─────────────────────────────────┤
+│ - students: List[Student]       │
+│ - library: Library               │
+├─────────────────────────────────┤
+│ + new_student()                  │
+│ + delete_student()               │
+│ + redact_student()               │
+│ + save_data()                    │
+│ + load_data()                    │
+│ + clear_data()                   │
+│ + visit_of_last_week()           │
+│ + material_study_operation()     │
+│ + exam_preparation_operation()   │
+│ + curricular_planning_operation()│
+│ + operation_of_using_library()   │
+│ + new_book()                      │
+└─────────────────────────────────┘
+               │
+               │ 1..* (содержит)
+               ▼
+┌─────────────────────────────────┐
+│            Student               │
+├─────────────────────────────────┤
+│ - name: str                      │
+│ - surname: str                   │
+│ - group: str                      │
+│ - specialty: str                  │
+│ - educational_materials: List     │
+│ - exams: List                    │
+│ - schedule: Dict                  │
+│ - visits: Dict                    │
+│ - marks: Dict                     │
+│ - books: List[Book]               │
+├─────────────────────────────────┤
+│ + get_information()               │
+│ + get_schedule()                  │
+│ + new_visit()                     │
+│ + get_visit()                     │
+│ + new_marks()                     │
+│ + get_marks()                     │
+│ + exam_check()                    │
+└─────────────────────────────────┘
+               │
+               │ 0..* (имеет)
+               ▼
+┌─────────────────────────────────┐
+│             Book                 │
+├─────────────────────────────────┤
+│ - name_of_book: str              │
+│ - name_of_author: str            │
+│ - genre: str                      │
+│ - content: str                    │
+└─────────────────────────────────┘
+
+┌─────────────────────────────────┐
+│            Library               │
+├─────────────────────────────────┤
+│ - books: List[Book]              │
+├─────────────────────────────────┤
+│ + new_book()                      │
+│ + redact()                        │
+│ + delete_book()                   │
+└─────────────────────────────────┘
+               │
+               │ 1 (содержит)
+               ▼
+┌─────────────────────────────────┐
+│             Book                 │
+└─────────────────────────────────┘
+
+┌─────────────────────────────────┐
+│         GlobalVariables         │
+├─────────────────────────────────┤
+│ + DAYS: List[str]                │
+│ + TIME_OF_CLASSES: List[str]     │
+└─────────────────────────────────┘
+
+Отношения:
+- AllStudents содержит множество Students (композиция)
+- AllStudents содержит одну Library (композиция)
+- Library содержит множество Books (агрегация)
+- Student может иметь множество Books (ассоциация)
+- Student и Library используют GlobalVariables (зависимость)

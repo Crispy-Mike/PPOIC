@@ -1,10 +1,72 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-</body>
-</html>
+{% block title %}Посещаемость: {{ student.name }} {{ student.surname }}{% endblock %}
+
+{% block content %}
+<h1>Отметка посещаемости</h1>
+<h2>{{ student.name }} {{ student.surname }} ({{ student.group }})</h2>
+
+<form method="POST" class="visit-form">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Время</th>
+                {% for day in days %}
+                <th>{{ day }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for time in time_slots %}
+            <tr>
+                <td>{{ time }}</td>
+                {% for day in days %}
+                <td>
+                    {% set day_schedule = student.schedule.get(day, []) %}
+                    {% if day_schedule and loop.index0 < day_schedule|length and day_schedule[loop.index0] != '-' %}
+                        <select name="visit_{{ day }}_{{ loop.parent.index0 }}" class="visit-select">
+                            <option value="">--</option>
+                            <option value="+" {% if student.visits.get(day, []) and student.visits[day][loop.parent.index0] == '+' %}selected{% endif %}>✅ Был</option>
+                            <option value="-" {% if student.visits.get(day, []) and student.visits[day][loop.parent.index0] == '-' %}selected{% endif %}>❌ Не был</option>
+                        </select>
+                        <small>{{ day_schedule[loop.parent.index0] }}</small>
+                    {% else %}
+                        <span class="no-class">-</span>
+                        <input type="hidden" name="visit_{{ day }}_{{ loop.parent.index0 }}" value="-">
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn btn-success">Сохранить посещаемость</button>
+        <a href="{{ url_for('student_detail', student_id=student_id) }}" class="btn">Отмена</a>
+    </div>
+</form>
+
+<style>
+.visit-select {
+    width: 80px;
+    margin-bottom: 5px;
+}
+.no-class {
+    color: #999;
+    font-style: italic;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+th {
+    background-color: #f2f2f2;
+}
+</style>
+{% endblock %}

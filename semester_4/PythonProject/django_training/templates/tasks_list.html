@@ -1,10 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Список задач</title>
+    <style>
+        .task {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .completed {
+            background-color: #e0ffe0;
+        }
+    </style>
 </head>
 <body>
+    <h1>Мои задачи</h1>
 
+    {% for task in tasks %}
+        <div class="task {% if task.completed %}completed{% endif %}">
+            <h3>{{ task.title }}</h3>
+            <p>{{ task.description }}</p>
+            <p>Создано: {{ task.created_at }}</p>
+            <p>Статус:
+                {% if task.completed %}
+                    ✅ Выполнено
+                {% else %}
+                    ❌ Не выполнено
+                {% endif %}
+            </p>
+        </div>
+    {% empty %}
+        <p>Пока нет задач. Добавь первую через админку!</p>
+    {% endfor %}
 </body>
 </html>

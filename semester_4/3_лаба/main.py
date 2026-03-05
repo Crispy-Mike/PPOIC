@@ -27,7 +27,10 @@ BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 GRAY = (128, 128, 128)
 LIGHT_BLUE = (173, 216, 230)
+DARK_BLUE = (0, 0, 139)
 GOLD = (255, 215, 0)
+PURPLE = (128, 0, 128)
+ORANGE = (255, 165, 0)
 
 # Состояния игры
 STATE_SPLASH = -1
@@ -61,10 +64,12 @@ class HangmanGame:
         self.font_medium = pygame.font.Font(None, 48)
         self.font_small = pygame.font.Font(None, 36)
         self.font_tiny = pygame.font.Font(None, 24)
-
+        self.bot_thinking = False  # флаг, что бот "думает"
+        self.bot_message = None  # текущее сообщение от бота
+        self.bot_message_time = 0  # время показа сообщения
         # Инициализация компонентов
         self.db = Database()
-        self.email_sender = create_demo_email_sender()  # Для демо-режима
+        self.email_sender = create_demo_email_sender()
         self.game_screens = GameScreens(self.screen)
 
         # Состояние игры
@@ -82,7 +87,7 @@ class HangmanGame:
         self.letters_display = None
         self.alphabet_buttons = []
 
-        # Элементы интерфейса (инициализируем пустыми списками)
+        # Элементы интерфейса
         self.entrance_buttons = []
         self.entrance_inputs = []
         self.registration_buttons = []
@@ -107,38 +112,141 @@ class HangmanGame:
         self.search_start_time = 0
         self.search_animation_time = 0
 
-        # Создаем кнопки после инициализации всех атрибутов
+        # Прокрутка для справки
+        self.help_scroll = 0
+        self.help_max_scroll = 0
+        self.dragging_scroll = False
+
+        # Создаем кнопки
         self.create_alphabet_buttons()
         self.create_menu_buttons()
-        self.create_entrance_screen()  # Сразу создаем экран входа
+        self.create_entrance_screen()
 
+    def set_alphabet_position(self, y_offset):
+        """Устанавливает вертикальное положение всех кнопок алфавита"""
+        start_x = 50
+        start_y = y_offset
+        button_size = 35
+        spacing = 5
+        letters = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
+        for i, button in enumerate(self.alphabet_buttons):
+            x = start_x + (i % 11) * (button_size + spacing)
+            y = start_y + (i // 11) * (button_size + spacing)
+            button.x = x
+            button.y = y
+            button.rect.x = x
+            button.rect.y = y
+
+    def start_bot_turn(self):
+        """Запускает таймер для хода бота (думает от 2 до 7 секунд)"""
+        if self.bot_thinking:
+            return
+        self.bot_thinking = True
+        self.game_manager.waiting_for_opponent = True
+        thinking_time = random.uniform(2, 7) * 1000  # в миллисекундах
+        pygame.time.set_timer(pygame.USEREVENT + 2, int(thinking_time), loops=1)
+
+    def do_bot_turn(self):
+        """Выполняет ход бота после задержки"""
+        self.bot_thinking = False
+        self.game_manager.waiting_for_opponent = False
+
+        # Бот выбирает букву
+        letter, result = self.game_manager.bot_guess()
+        if letter is None:
+            # Если нет доступных букв (маловероятно), ход переходит игроку
+            self.game_manager.my_turn = True
+            return
+
+        # Показываем результат
+        if result.get("success", False):
+            message = f"угадал букву '{letter}'!"
+        else:
+            message = f"ошибся с буквой '{letter}'!"
+        self.bot_message = message
+        self.bot_message_time = time.time()
+
+        # Проверяем окончание игры
+        if result.get("game_over", False):
+            if result.get("opponent_won", False):
+                self.game_manager.won = False
+                self.play_sound(self.lose_sound)
+            self.end_game()
+            return
+
+        # Обновляем статус хода
+        if result.get("continue_turn", False):
+            # Бот продолжает ход
+            self.game_manager.my_turn = False
+            self.game_manager.waiting_for_opponent = True
+            self.start_bot_turn()  # следующий ход бота
+        else:
+            # Ход переходит к игроку
+            self.game_manager.my_turn = True
+            self.game_manager.waiting_for_opponent = False
     def load_sounds(self):
         """Загрузка звуковых эффектов"""
         try:
-            # В реальном проекте здесь должны быть пути к звуковым файлам
-            # self.correct_sound = pygame.mixer.Sound("sounds/correct.wav")
-            # self.wrong_sound = pygame.mixer.Sound("sounds/wrong.wav")
-            # self.win_sound = pygame.mixer.Sound("sounds/win.wav")
-            # self.lose_sound = pygame.mixer.Sound("sounds/lose.wav")
-            # pygame.mixer.music.load("sounds/background.mp3")
-            pass
-        except:
-            print("Звуковые файлы не найдены")
+            # Создаем простые звуки с помощью pygame.mixer.Sound
+            # Если файлы не найдены, создаем заглушки
+            self.correct_sound = None
+            self.wrong_sound = None
+            self.win_sound = None
+            self.lose_sound = None
+            self.click_sound = None
+
+            # Пытаемся загрузить звуки из файлов
+            try:
+                self.correct_sound = pygame.mixer.Sound("sounds/correct.wav")
+                self.wrong_sound = pygame.mixer.Sound("sounds/wrong.wav")
+                self.win_sound = pygame.mixer.Sound("sounds/win.wav")
+                self.lose_sound = pygame.mixer.Sound("sounds/lose.wav")
+                self.click_sound = pygame.mixer.Sound("sounds/click.wav")
+                pygame.mixer.music.load("sounds/background.mp3")
+                pygame.mixer.music.set_volume(0.5)
+                pygame.mixer.music.play(-1)  # Бесконечное воспроизведение
+            except:
+                print("Звуковые файлы не найдены, использую заглушки")
+                # Создаем заглушки для звуков
+                self.create_dummy_sounds()
+        except Exception as e:
+            print(f"Ошибка загрузки звуков: {e}")
+
+    def create_dummy_sounds(self):
+        """Создание заглушек для звуков"""
+
+        class DummySound:
+            def play(self):
+                pass
+
+        self.correct_sound = DummySound()
+        self.wrong_sound = DummySound()
+        self.win_sound = DummySound()
+        self.lose_sound = DummySound()
+        self.click_sound = DummySound()
+
+    def play_sound(self, sound):
+        """Воспроизведение звука"""
+        if sound:
+            try:
+                sound.play()
+            except:
+                pass
 
     def create_alphabet_buttons(self):
         """Создание кнопок алфавита"""
         self.alphabet_buttons = []
         letters = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
-        start_x = 100
+        start_x = 50  # Сместил левее
         start_y = 450
-        button_size = 40
-        spacing = 10
+        button_size = 35  # Немного уменьшил
+        spacing = 5  # Уменьшил отступ
 
         for i, letter in enumerate(letters):
-            x = start_x + (i % 10) * (button_size + spacing)
-            y = start_y + (i // 10) * (button_size + spacing)
+            x = start_x + (i % 11) * (button_size + spacing)  # 11 букв в ряд
+            y = start_y + (i // 11) * (button_size + spacing)
             button = Button(x, y, button_size, button_size, letter, self.screen)
-            button.font = pygame.font.Font(None, 30)
+            button.font = pygame.font.Font(None, 25)
             button.text_color = BLACK
             button.color = LIGHT_BLUE
             self.alphabet_buttons.append(button)
@@ -150,21 +258,21 @@ class HangmanGame:
             "main": [
                 Button(300, 200, 50, 200, "Оффлайн игра", self.screen),
                 Button(300, 270, 50, 200, "Онлайн игра", self.screen),
-                Button(300, 340, 50, 200, "Таблица рекордов", self.screen),
+                Button(300, 340, 50, 200, "Рекорды", self.screen),
                 Button(300, 410, 50, 200, "Справка", self.screen),
                 Button(300, 480, 50, 200, "Выход", self.screen)
             ],
             "offline_levels": [
-                Button(200, 200, 50, 150, "Легкий", self.screen),
-                Button(400, 200, 50, 150, "Средний", self.screen),
-                Button(600, 200, 50, 150, "Сложный", self.screen),
-                Button(300, 350, 50, 200, "Назад", self.screen)
+                Button(150, 250, 50, 150, "Легкий", self.screen),
+                Button(325, 250, 50, 150, "Средний", self.screen),
+                Button(500, 250, 50, 150, "Сложный", self.screen),
+                Button(300, 400, 50, 200, "Назад", self.screen)
             ],
             "online_levels": [
-                Button(200, 200, 50, 150, "Легкий", self.screen),
-                Button(400, 200, 50, 150, "Средний", self.screen),
-                Button(600, 200, 50, 150, "Сложный", self.screen),
-                Button(300, 350, 50, 200, "Назад", self.screen)
+                Button(150, 250, 50, 150, "Легкий", self.screen),
+                Button(325, 250, 50, 150, "Средний", self.screen),
+                Button(500, 250, 50, 150, "Сложный", self.screen),
+                Button(300, 400, 50, 200, "Назад", self.screen)
             ]
         }
 
@@ -174,7 +282,8 @@ class HangmanGame:
                 if "Легкий" in button.text:
                     button.color = (144, 238, 144)  # Светло-зеленый
                 elif "Средний" in button.text:
-                    button.color = (255, 255, 224)  # Светло-желтый
+                    button.color = DARK_BLUE  # Синий
+                    button.text_color = WHITE
                 elif "Сложный" in button.text:
                     button.color = (255, 182, 193)  # Светло-красный
 
@@ -184,7 +293,7 @@ class HangmanGame:
         button_registration = Button(300, 420, 50, 200, "Регистрация", self.screen)
         button_exit = Button(300, 490, 50, 200, "Выход", self.screen)
 
-        input_box_name = InputBox(250, 200, 300, 40, self.screen, "text", "Введите логин или email")
+        input_box_name = InputBox(250, 200, 300, 40, self.screen, "text", "Введите логин")
         input_box_password = InputBox(250, 270, 300, 40, self.screen, "password", "Введите пароль")
         input_box_password.is_password = True
 
@@ -230,10 +339,14 @@ class HangmanGame:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.handle_escape()
-
+                    elif event.key == pygame.K_UP and self.current_state == STATE_HELP:
+                        self.help_scroll = max(0, self.help_scroll - 30)
+                    elif event.key == pygame.K_DOWN and self.current_state == STATE_HELP:
+                        self.help_scroll = min(self.help_max_scroll, self.help_scroll + 30)
+                # Удалён старый блок для USEREVENT + 1
                 self.handle_events(event)
 
-            # Отрисовка в зависимости от состояния
+            # Отрисовка
             self.draw()
 
             pygame.display.flip()
@@ -242,11 +355,10 @@ class HangmanGame:
         self.db.close()
         pygame.quit()
         sys.exit()
-
     def show_splash(self):
         """Показ заставки"""
         start_time = time.time()
-        while time.time() - start_time < 3:  # 3 секунды
+        while time.time() - start_time < 3:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return
@@ -255,7 +367,6 @@ class HangmanGame:
                         self.current_state = STATE_ENTRANCE
                         return
 
-            # Анимация заставки
             self.screen.fill((0, 0, 20))
 
             # Звезды
@@ -285,17 +396,20 @@ class HangmanGame:
 
     def handle_escape(self):
         """Обработка нажатия ESC"""
-        if self.current_state == STATE_GAME:
+        if self.current_state == STATE_GAME or self.current_state == STATE_GAME_ONLINE:
+            if self.current_state == STATE_GAME_ONLINE:
+                self.set_alphabet_position(450)  # вернуть для оффлайн
             self.current_state = STATE_MAIN_MENU
-        elif self.current_state in [STATE_OFFLINE_LEVELS, STATE_ONLINE_LEVELS, STATE_HELP, STATE_RECORDS]:
+        elif self.current_state in [STATE_OFFLINE_LEVELS, STATE_ONLINE_LEVELS, STATE_HELP, STATE_RECORDS,
+                                    STATE_SEARCHING]:
             self.current_state = STATE_MAIN_MENU
         elif self.current_state == STATE_ENTRANCE:
-            pass  # Ничего не делаем
+            pass
         else:
             self.current_state = STATE_ENTRANCE
 
     def handle_events(self, event):
-        """Обработка событий в зависимости от состояния"""
+        """Обработка событий"""
         if self.current_state == STATE_SPLASH:
             return
 
@@ -324,7 +438,11 @@ class HangmanGame:
             self.handle_game_events(event)
 
         elif self.current_state == STATE_GAME_ONLINE:
-            self.handle_online_game_events(event)
+            # Обработка события хода бота (USEREVENT + 2)
+            if event.type == pygame.USEREVENT + 2:
+                self.do_bot_turn()
+            else:
+                self.handle_online_game_events(event)
 
         elif self.current_state == STATE_HELP:
             self.handle_help_events(event)
@@ -334,15 +452,12 @@ class HangmanGame:
 
         elif self.current_state == STATE_GAME_OVER:
             self.handle_game_over_events(event)
-
-    # === ОБРАБОТЧИКИ СОБЫТИЙ ===
-
     def handle_entrance_events(self, event):
         """Обработка событий на экране входа"""
-        # Обработка кнопок
         if event.type == pygame.MOUSEBUTTONDOWN:
             for button in self.entrance_buttons:
                 if button.rect.collidepoint(event.pos):
+                    self.play_sound(self.click_sound)
                     if button.text == "Войти":
                         self.handle_login()
                     elif button.text == "Регистрация":
@@ -352,7 +467,6 @@ class HangmanGame:
                         pygame.quit()
                         sys.exit()
 
-        # Обработка полей ввода
         for input_box in self.entrance_inputs:
             input_box.handle_event(event)
 
@@ -361,6 +475,7 @@ class HangmanGame:
         if event.type == pygame.MOUSEBUTTONDOWN:
             for button in self.registration_buttons:
                 if button.rect.collidepoint(event.pos):
+                    self.play_sound(self.click_sound)
                     if button.text == "Зарегистрироваться":
                         self.handle_registration()
                     elif button.text == "Назад к входу":
@@ -375,6 +490,7 @@ class HangmanGame:
         if event.type == pygame.MOUSEBUTTONDOWN:
             for button in self.confirmation_buttons:
                 if button.rect.collidepoint(event.pos):
+                    self.play_sound(self.click_sound)
                     if button.text == "Подтвердить":
                         self.handle_confirmation()
 
@@ -386,15 +502,17 @@ class HangmanGame:
         if event.type == pygame.MOUSEBUTTONDOWN:
             for button in self.menu_buttons["main"]:
                 if button.rect.collidepoint(event.pos):
+                    self.play_sound(self.click_sound)
                     if button.text == "Оффлайн игра":
                         self.current_state = STATE_OFFLINE_LEVELS
                     elif button.text == "Онлайн игра":
                         self.current_state = STATE_ONLINE_LEVELS
-                    elif button.text == "Таблица рекордов":
+                    elif button.text == "Рекорды":
                         self.load_records()
                         self.current_state = STATE_RECORDS
                     elif button.text == "Справка":
                         self.current_state = STATE_HELP
+                        self.help_scroll = 0
                     elif button.text == "Выход":
                         pygame.quit()
                         sys.exit()
@@ -404,10 +522,10 @@ class HangmanGame:
         if event.type == pygame.MOUSEBUTTONDOWN:
             for button in self.menu_buttons["offline_levels"]:
                 if button.rect.collidepoint(event.pos):
+                    self.play_sound(self.click_sound)
                     if button.text == "Назад":
                         self.current_state = STATE_MAIN_MENU
                     else:
-                        # Запуск оффлайн игры с выбранной сложностью
                         difficulty = "easy"
                         if button.text == "Средний":
                             difficulty = "medium"
@@ -421,10 +539,10 @@ class HangmanGame:
         if event.type == pygame.MOUSEBUTTONDOWN:
             for button in self.menu_buttons["online_levels"]:
                 if button.rect.collidepoint(event.pos):
+                    self.play_sound(self.click_sound)
                     if button.text == "Назад":
                         self.current_state = STATE_MAIN_MENU
                     else:
-                        # Запуск поиска онлайн игры
                         difficulty = "easy"
                         if button.text == "Средний":
                             difficulty = "medium"
@@ -442,26 +560,44 @@ class HangmanGame:
     def handle_game_events(self, event):
         """Обработка событий во время игры"""
         if event.type == pygame.MOUSEBUTTONDOWN:
-            # Проверка нажатия на буквы
             for i, button in enumerate(self.alphabet_buttons):
                 if button.rect.collidepoint(event.pos) and not button.active:
+                    self.play_sound(self.click_sound)
                     letter = button.text
                     self.make_guess(letter)
                     break
 
     def handle_online_game_events(self, event):
-        """Обработка событий во время онлайн игры"""
         if event.type == pygame.MOUSEBUTTONDOWN:
             # Проверка нажатия на буквы (только если наш ход)
-            if self.game_manager and self.game_manager.my_turn:
-                for i, button in enumerate(self.alphabet_buttons):
+            if (self.game_manager and self.game_manager.my_turn and
+                    not self.game_manager.waiting_for_opponent and
+                    not self.game_manager.game_over):
+
+                for button in self.alphabet_buttons:
                     if button.rect.collidepoint(event.pos) and not button.active:
+                        self.play_sound(self.click_sound)
                         letter = button.text
                         self.make_online_guess(letter)
                         break
 
+        # Если после хода игрока очередь бота и бот ещё не запущен
+        if (self.current_state == STATE_GAME_ONLINE and
+                self.game_manager and
+                not self.game_manager.my_turn and
+                not self.game_manager.waiting_for_opponent and
+                not self.game_manager.game_over and
+                not self.bot_thinking):
+            self.start_bot_turn()
+
     def handle_help_events(self, event):
-        """Обработка событий на экране справки"""
+        """Обработка событий на экране справки с прокруткой"""
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 4:  # Колесо вверх
+                self.help_scroll = max(0, self.help_scroll - 30)
+            elif event.button == 5:  # Колесо вниз
+                self.help_scroll = min(self.help_max_scroll, self.help_scroll + 30)
+
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self.current_state = STATE_MAIN_MENU
@@ -476,15 +612,12 @@ class HangmanGame:
         """Обработка событий на экране окончания игры"""
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
-                # Играть снова
                 if self.current_mode == "offline":
                     self.start_offline_game(self.current_difficulty)
                 else:
                     self.start_online_search(self.current_difficulty)
             elif event.key == pygame.K_ESCAPE:
                 self.current_state = STATE_MAIN_MENU
-
-    # === ОБРАБОТКА ДЕЙСТВИЙ ===
 
     def handle_login(self):
         """Обработка входа"""
@@ -511,7 +644,6 @@ class HangmanGame:
         password = self.registration_inputs[2].text
         password2 = self.registration_inputs[3].text
 
-        # Валидация
         if not login or not email or not password:
             self.show_message("Заполните все поля")
             return
@@ -532,11 +664,9 @@ class HangmanGame:
             self.show_message("Пароль должен быть минимум 6 символов")
             return
 
-        # Регистрация в БД
         result = self.db.register_user(login, email, password)
 
         if result["success"]:
-            # Отправка кода подтверждения
             code = result["code"]
             email_result = self.email_sender.send_verification_code(email, code)
 
@@ -576,25 +706,20 @@ class HangmanGame:
         self.current_mode = "offline"
         self.current_difficulty = difficulty
 
-        # Создаем менеджер игры
         self.game_manager = GameManager(mode="offline", difficulty=difficulty)
-
-        # Создаем виселицу
-        self.hangman = Hangman(100, 100, self.screen)
+        self.hangman = Hangman(50, 100, self.screen)  # Сместил левее
         self.hangman.errors = 0
         self.hangman.max_errors = self.game_manager.max_errors
 
-        # Создаем отображение слова
-        word_x = 300
+        # Слово размещаем левее
+        word_x = 250  # Сместил левее
         word_y = 350
-        self.letters_display = Letters(self.screen, self.game_manager.word, word_x, word_y, 48, 50)
+        self.letters_display = Letters(self.screen, self.game_manager.word, word_x, word_y, 48, 45)
 
-        # Сбрасываем кнопки алфавита
         for button in self.alphabet_buttons:
             button.color = LIGHT_BLUE
             button.active = False
 
-        # Запускаем игру
         self.game_manager.start_game()
         self.current_state = STATE_GAME
 
@@ -603,131 +728,119 @@ class HangmanGame:
         self.current_mode = "online"
         self.current_difficulty = difficulty
 
-        # Имитация поиска
         self.search_start_time = time.time()
         self.current_state = STATE_SEARCHING
 
     def start_online_game(self):
         """Запуск онлайн игры"""
-        # Создаем менеджер игры
+        self.bot_thinking = False
+        self.bot_message = None
         self.game_manager = GameManager(mode="online", difficulty=self.current_difficulty)
-
-        # Устанавливаем слово противника (длина ±1)
         self.game_manager.set_opponent_word(len(self.game_manager.word))
 
-        # Создаем виселицу
-        self.hangman = Hangman(100, 100, self.screen)
+        self.hangman = Hangman(50, 100, self.screen)
         self.hangman.errors = 0
         self.hangman.max_errors = self.game_manager.max_errors
 
-        # Создаем отображение слова
-        word_x = 300
+        # Слово размещаем слева
+        word_x = 100
         word_y = 350
-        self.letters_display = Letters(self.screen, self.game_manager.word, word_x, word_y, 48, 50)
+        self.letters_display = Letters(self.screen, self.game_manager.word, word_x, word_y, 48, 45)
 
-        # Сбрасываем кнопки алфавита
         for button in self.alphabet_buttons:
             button.color = LIGHT_BLUE
             button.active = False
 
-        # Запускаем игру
+        # Устанавливаем алфавит ниже, чтобы не перекрывать виселицы
+        self.set_alphabet_position(400)
+
+        # Сброс состояния бота
+        self.bot_thinking = False
+        self.bot_message = None
+
         self.game_manager.start_game()
         self.current_state = STATE_GAME_ONLINE
-
     def make_guess(self, letter):
         """Обработка попытки угадать букву"""
         if not self.game_manager or self.game_manager.game_over:
             return
 
-        # Отключаем кнопку
         for button in self.alphabet_buttons:
             if button.text == letter:
                 button.active = True
                 break
 
-        # Проверяем букву
         result = self.game_manager.guess_letter(letter)
 
         if result["success"]:
-            # Правильная буква
+            self.play_sound(self.correct_sound)
             self.letters_display.guessed_letters.append(letter)
             for button in self.alphabet_buttons:
                 if button.text == letter:
                     button.color = GREEN
         else:
-            # Неправильная буква
+            self.play_sound(self.wrong_sound)
             self.hangman.add_error()
             for button in self.alphabet_buttons:
                 if button.text == letter:
                     button.color = RED
 
-        # Проверяем окончание игры
         if result.get("game_over", False):
+            if self.game_manager.won:
+                self.play_sound(self.win_sound)
+            else:
+                self.play_sound(self.lose_sound)
             self.end_game()
 
     def make_online_guess(self, letter):
         """Обработка попытки в онлайн режиме"""
-        if not self.game_manager or not self.game_manager.my_turn:
+        if not self.game_manager or not self.game_manager.my_turn or self.game_manager.waiting_for_opponent:
+            print(
+                f"НЕЛЬЗЯ ХОДИТЬ: my_turn={self.game_manager.my_turn if self.game_manager else 'None'}, waiting={self.game_manager.waiting_for_opponent if self.game_manager else 'None'}")
             return
 
-        # Отключаем кнопку
+        print(f"ИГРОК ХОДИТ: буква {letter}")
+
         for button in self.alphabet_buttons:
             if button.text == letter:
                 button.active = True
                 break
 
         result = self.game_manager.guess_letter(letter)
+        print(f"Результат хода игрока: {result}")
 
         if result["success"]:
-            # Правильная буква
-            self.letters_display.guessed_letters.append(letter)
+            self.play_sound(self.correct_sound)
             for button in self.alphabet_buttons:
                 if button.text == letter:
                     button.color = GREEN
-            # Наш ход продолжается, если угадали
-            self.game_manager.my_turn = result.get("continue_turn", True)
+
+            if result.get("game_over", False):
+                if self.game_manager.won:
+                    self.play_sound(self.win_sound)
+                self.end_game()
+                return
         else:
-            # Неправильная буква
+            self.play_sound(self.wrong_sound)
             self.hangman.add_error()
             for button in self.alphabet_buttons:
                 if button.text == letter:
                     button.color = RED
-            # Ход переходит к противнику
+
+            if result.get("game_over", False):
+                self.play_sound(self.lose_sound)
+                self.end_game()
+                return
+
+            # Если ошибка - ход переходит к противнику
+            print("ОШИБКА ИГРОКА - Ход переходит к противнику")
             self.game_manager.my_turn = False
+            self.game_manager.waiting_for_opponent = False  # Сбросим, чтобы триггернулся таймер
 
-            # Имитация хода противника
-            self.simulate_opponent_turn()
-
-        # Проверяем окончание игры
-        if result.get("game_over", False):
-            self.end_game()
-
-    def simulate_opponent_turn(self):
-        """Имитация хода противника"""
-        # В реальной онлайн игре здесь был бы обмен данными по сети
-        # Для демо просто имитируем
-
-        # Небольшая задержка для имитации мышления противника
-        pygame.time.wait(500)
-
-        # Случайная буква
-        letters = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
-        letter = random.choice(letters)
-
-        # Противник делает ход
-        result = self.game_manager.opponent_guess(letter)
-
-        if result.get("continue_turn", False):
-            # Противник продолжает ход
-            self.game_manager.my_turn = False
-        else:
-            # Ход переходит к нам
-            self.game_manager.my_turn = True
 
     def end_game(self):
         """Завершение игры"""
         if self.game_manager.won:
-            # Сохраняем результат
             if self.current_user:
                 self.db.save_record(
                     self.current_user["user_id"],
@@ -737,10 +850,6 @@ class HangmanGame:
                     len(self.game_manager.word)
                 )
 
-            self.show_message(f"Победа! Счет: {self.game_manager.score}", GREEN)
-        else:
-            self.show_message(f"Поражение! Загаданное слово: {self.game_manager.word}", RED)
-
         self.current_state = STATE_GAME_OVER
 
     def load_records(self):
@@ -749,13 +858,10 @@ class HangmanGame:
 
     def show_message(self, text, color=WHITE):
         """Показ временного сообщения"""
-        # В реальном проекте здесь можно сделать всплывающее уведомление
         print(f"MESSAGE: {text}")
 
-    # === ОТРИСОВКА ===
-
     def draw(self):
-        """Отрисовка в зависимости от состояния"""
+        """Отрисовка"""
         if self.current_state == STATE_SPLASH:
             return
 
@@ -797,12 +903,17 @@ class HangmanGame:
 
     def draw_entrance(self):
         """Отрисовка экрана входа"""
-        self.game_screens.draw_main_menu([])
+        # Простой фон без надписей
+        self.screen.fill((20, 20, 40))
 
-        # Заголовок
-        title = self.font_medium.render("Вход в игру", True, WHITE)
-        title_rect = title.get_rect(center=(WIDTH // 2, 100))
+        # Заголовок в верхней части
+        title = self.font_large.render("HANGMAN", True, GOLD)
+        title_rect = title.get_rect(center=(WIDTH // 2, 80))
         self.screen.blit(title, title_rect)
+
+        subtitle = self.font_small.render("Classic Word Guessing Game", True, WHITE)
+        sub_rect = subtitle.get_rect(center=(WIDTH // 2, 130))
+        self.screen.blit(subtitle, sub_rect)
 
         # Поля ввода
         for input_box in self.entrance_inputs:
@@ -814,52 +925,61 @@ class HangmanGame:
 
     def draw_registration(self):
         """Отрисовка экрана регистрации"""
-        self.game_screens.draw_main_menu([])
+        self.screen.fill((20, 20, 40))
 
-        # Заголовок
-        title = self.font_medium.render("Регистрация", True, WHITE)
-        title_rect = title.get_rect(center=(WIDTH // 2, 100))
+        title = self.font_large.render("HANGMAN", True, GOLD)
+        title_rect = title.get_rect(center=(WIDTH // 2, 50))
         self.screen.blit(title, title_rect)
 
-        # Поля ввода
+        subtitle = self.font_small.render("Регистрация", True, WHITE)
+        sub_rect = subtitle.get_rect(center=(WIDTH // 2, 100))
+        self.screen.blit(subtitle, sub_rect)
+
         for input_box in self.registration_inputs:
             input_box.draw(self.font_small)
 
-        # Кнопки
         for button in self.registration_buttons:
             button.draw()
 
     def draw_confirmation(self):
         """Отрисовка экрана подтверждения"""
-        self.game_screens.draw_main_menu([])
+        self.screen.fill((20, 20, 40))
 
-        # Заголовок
-        title = self.font_medium.render("Подтверждение email", True, WHITE)
-        title_rect = title.get_rect(center=(WIDTH // 2, 100))
+        title = self.font_large.render("HANGMAN", True, GOLD)
+        title_rect = title.get_rect(center=(WIDTH // 2, 50))
         self.screen.blit(title, title_rect)
 
-        # Информация
+        subtitle = self.font_small.render("Подтверждение email", True, WHITE)
+        sub_rect = subtitle.get_rect(center=(WIDTH // 2, 100))
+        self.screen.blit(subtitle, sub_rect)
+
         if self.temp_user_data:
             info = self.font_small.render(f"Код отправлен на {self.temp_user_data['email']}", True, GRAY)
-            info_rect = info.get_rect(center=(WIDTH // 2, 170))
+            info_rect = info.get_rect(center=(WIDTH // 2, 160))
             self.screen.blit(info, info_rect)
 
-        # Поля ввода
         for input_box in self.confirmation_inputs:
             input_box.draw(self.font_small)
 
-        # Кнопки
         for button in self.confirmation_buttons:
             button.draw()
 
     def draw_main_menu(self):
         """Отрисовка главного меню"""
-        self.game_screens.draw_main_menu([])
+        # Простой градиентный фон
+        for i in range(HEIGHT):
+            color = (20 + i // 10, 20 + i // 10, 40 + i // 5)
+            pygame.draw.line(self.screen, color, (0, i), (WIDTH, i))
+
+        # Заголовок
+        title = self.font_large.render("HANGMAN", True, GOLD)
+        title_rect = title.get_rect(center=(WIDTH // 2, 100))
+        self.screen.blit(title, title_rect)
 
         # Приветствие пользователя
         if self.current_user:
             welcome = self.font_small.render(f"Привет, {self.current_user['login']}!", True, GOLD)
-            welcome_rect = welcome.get_rect(topright=(WIDTH - 20, 20))
+            welcome_rect = welcome.get_rect(center=(WIDTH // 2, 160))
             self.screen.blit(welcome, welcome_rect)
 
         # Кнопки
@@ -868,11 +988,12 @@ class HangmanGame:
 
     def draw_offline_levels(self):
         """Отрисовка выбора уровня оффлайн"""
-        self.game_screens.draw_offline_level_selection([])
+        # Простой фон
+        self.screen.fill((245, 245, 220))
 
         # Заголовок
         title = self.font_medium.render("Выберите сложность", True, BLACK)
-        title_rect = title.get_rect(center=(WIDTH // 2, 100))
+        title_rect = title.get_rect(center=(WIDTH // 2, 120))
         self.screen.blit(title, title_rect)
 
         # Кнопки
@@ -881,48 +1002,78 @@ class HangmanGame:
 
     def draw_online_levels(self):
         """Отрисовка выбора уровня онлайн"""
-        self.game_screens.draw_online_level_selection([])
+        self.screen.fill((0, 0, 20))
 
         # Заголовок
-        title = self.font_medium.render("Выберите режим онлайн", True, WHITE)
-        title_rect = title.get_rect(center=(WIDTH // 2, 100))
+        title = self.font_medium.render("Выберите сложность", True, WHITE)
+        title_rect = title.get_rect(center=(WIDTH // 2, 120))
         self.screen.blit(title, title_rect)
 
-        # Кнопки
         for button in self.menu_buttons["online_levels"]:
             button.draw()
 
     def draw_searching(self):
         """Отрисовка поиска противника"""
-        self.game_screens.draw_searching_opponent()
+        self.screen.fill((0, 0, 20))
+
+        # Центрируем все элементы
+        center_x = WIDTH // 2
+        center_y = HEIGHT // 2 - 50
+
+        # Радар
+        for radius in [50, 100, 150]:
+            pygame.draw.circle(self.screen, (0, 100, 0), (center_x, center_y), radius, 1)
+
+        # Линии радара
+        pygame.draw.line(self.screen, (0, 100, 0), (center_x - 150, center_y), (center_x + 150, center_y), 1)
+        pygame.draw.line(self.screen, (0, 100, 0), (center_x, center_y - 150), (center_x, center_y + 150), 1)
+
+        # Вращающаяся линия
+        time_passed = time.time() - self.search_start_time
+        angle = time_passed * 2
+        end_x = center_x + 140 * pygame.math.Vector2(1, 0).rotate(angle * 57.3)[0]
+        end_y = center_y + 140 * pygame.math.Vector2(1, 0).rotate(angle * 57.3)[1]
+        pygame.draw.line(self.screen, (0, 255, 0), (center_x, center_y), (end_x, end_y), 2)
 
         # Прогресс поиска
-        elapsed = time.time() - self.search_start_time
-        if elapsed > 5:  # Через 5 секунд "находим" противника
-            # Имитация найденного противника
+        if time_passed > 5:
             self.start_online_game()
             return
 
-        # Анимация
-        dots = "." * (int(elapsed * 2) % 4)
-        searching_text = self.font_medium.render(f"Поиск противника{dots}", True, GREEN)
-        text_rect = searching_text.get_rect(center=(WIDTH // 2, HEIGHT - 100))
+        # Текст поиска
+        dots = "." * (int(time_passed * 2) % 4)
+        searching_text = self.font_large.render(f"ПОИСК ПРОТИВНИКА{dots}", True, GREEN)
+        text_rect = searching_text.get_rect(center=(center_x, center_y + 100))
         self.screen.blit(searching_text, text_rect)
 
-        # Кнопка отмены
-        cancel_text = self.font_small.render("Нажмите ESC для отмены", True, GRAY)
-        cancel_rect = cancel_text.get_rect(center=(WIDTH // 2, HEIGHT - 50))
-        self.screen.blit(cancel_text, cancel_rect)
+        # Статистика
+        stats = [
+            f"Players Online: {random.randint(100, 1000)}",
+            f"Your Rank: #{random.randint(1, 100)}",
+            f"Est. Time: {random.randint(5, 15)}s"
+        ]
+
+        y_offset = center_y + 160
+        for stat in stats:
+            stat_text = self.font_small.render(stat, True, (100, 255, 100))
+            stat_rect = stat_text.get_rect(center=(center_x, y_offset))
+            self.screen.blit(stat_text, stat_rect)
+            y_offset += 30
+
+        # Подсказка внизу экрана
+        hint_text = self.font_small.render("ESC - отмена", True, GRAY)
+        hint_rect = hint_text.get_rect(center=(center_x, HEIGHT - 30))
+        self.screen.blit(hint_text, hint_rect)
 
     def draw_game(self):
         """Отрисовка игры"""
-        # Фон
-        self.game_screens.draw_offline_game_background()
+        # Светлый фон для оффлайн игры
+        self.screen.fill((245, 245, 220))
 
-        # Виселица
+        # Виселица (черная на светлом фоне)
         self.hangman.draw_gallows_base()
 
-        # Рисуем части тела в зависимости от ошибок
+        # Рисуем части тела
         if self.hangman.errors >= 1:
             self.hangman.draw_head()
         if self.hangman.errors >= 2:
@@ -946,21 +1097,18 @@ class HangmanGame:
         # Информация
         info_y = 20
 
-        # Сложность
         difficulty_text = self.font_small.render(
             f"Сложность: {DIFFICULTY_SETTINGS[self.current_difficulty]['name']}",
             True, BLACK
         )
         self.screen.blit(difficulty_text, (10, info_y))
 
-        # Ошибки
         errors_text = self.font_small.render(
             f"Ошибки: {self.hangman.errors}/{self.game_manager.max_errors}",
             True, RED if self.hangman.errors > self.game_manager.max_errors // 2 else BLACK
         )
         self.screen.blit(errors_text, (10, info_y + 30))
 
-        # Таймер для сложного режима
         if self.game_manager and self.game_manager.time_limit:
             time_left = self.game_manager.get_time_left()
             if time_left is not None:
@@ -973,70 +1121,131 @@ class HangmanGame:
 
     def draw_online_game(self):
         """Отрисовка онлайн игры"""
-        # Фон
-        self.game_screens.draw_online_game_background()
+        self.draw_online_game_with_message(None)
 
-        # Виселица (наша)
-        self.hangman.draw_gallows_base()
+    def draw_online_game_with_message(self, extra_message=None):
+        """Отрисовка онлайн игры с дополнительным сообщением"""
+        # Темный фон
+        self.screen.fill((10, 10, 30))
 
-        # Рисуем части тела
-        if self.hangman.errors >= 1:
-            self.hangman.draw_head()
-        if self.hangman.errors >= 2:
-            self.hangman.draw_body()
-        if self.hangman.errors >= 3:
-            self.hangman.draw_left_arm()
-        if self.hangman.errors >= 4:
-            self.hangman.draw_right_arm()
-        if self.hangman.errors >= 5:
-            self.hangman.draw_left_leg()
-        if self.hangman.errors >= 6:
-            self.hangman.draw_right_leg()
+        # Наша виселица (слева)
+        self.draw_hangman(30, 80, self.hangman.errors, is_opponent=False)
 
-        # Наше слово
-        self.letters_display.draw()
+        # Виселица противника (справа)
+        if self.game_manager:
+            self.draw_hangman(480, 80, self.game_manager.opponent_errors, is_opponent=True)
 
-        # Слово противника (отображается частично)
+        # НАШЕ СЛОВО - слева
+        if self.letters_display:
+            word = self.game_manager.word
+            guessed = self.game_manager.guessed_letters
+            start_x = 80
+            start_y = 320
+            for i, letter in enumerate(word):
+                if letter in guessed:
+                    text = self.font_medium.render(letter, True, WHITE)
+                    text_rect = text.get_rect(center=(start_x + i * 35, start_y))
+                    self.screen.blit(text, text_rect)
+                else:
+                    # Рисуем подчеркивание
+                    text = self.font_medium.render("_", True, GRAY)
+                    text_rect = text.get_rect(center=(start_x + i * 35, start_y))
+                    self.screen.blit(text, text_rect)
+                    line_y = start_y + 30
+                    line_x = start_x + i * 35 - 12
+                    pygame.draw.line(self.screen, GRAY,
+                                     (line_x, line_y),
+                                     (line_x + 25, line_y), 2)
+
+        # СЛОВО БОТА - справа
         if self.game_manager and self.game_manager.opponent_word:
-            opp_display = self.game_manager.get_opponent_display()
-            opp_text = self.font_medium.render(opp_display, True, BLUE)
-            opp_rect = opp_text.get_rect(center=(WIDTH // 2, 400))
-            self.screen.blit(opp_text, opp_rect)
+            opp_word = self.game_manager.opponent_word
+            opp_guessed = self.game_manager.opponent_guessed
+            start_x = 500
+            start_y = 320
+            for i, letter in enumerate(opp_word):
+                if letter in opp_guessed:
+                    text = self.font_medium.render(letter, True, GREEN)
+                    text_rect = text.get_rect(center=(start_x + i * 35, start_y))
+                    self.screen.blit(text, text_rect)
+                else:
+                    text = self.font_medium.render("_", True, GRAY)
+                    text_rect = text.get_rect(center=(start_x + i * 35, start_y))
+                    self.screen.blit(text, text_rect)
+                    line_y = start_y + 30
+                    line_x = start_x + i * 35 - 12
+                    pygame.draw.line(self.screen, GRAY,
+                                     (line_x, line_y),
+                                     (line_x + 25, line_y), 2)
 
-            label = self.font_small.render("Слово противника:", True, GRAY)
-            label_rect = label.get_rect(center=(WIDTH // 2, 370))
-            self.screen.blit(label, label_rect)
-
-        # Алфавит
+        # Алфавит (уже с правильными координатами, установленными в start_online_game)
         for button in self.alphabet_buttons:
             button.draw()
 
         # Информация
-        info_y = 20
+        info_y = 10
 
-        # Сложность
+        # Наша информация
         difficulty_text = self.font_small.render(
             f"Сложность: {DIFFICULTY_SETTINGS[self.current_difficulty]['name']}",
             True, WHITE
         )
         self.screen.blit(difficulty_text, (10, info_y))
 
-        # Ошибки
         errors_text = self.font_small.render(
-            f"Ошибки: {self.hangman.errors}/{self.game_manager.max_errors}",
+            f"Наши ошибки: {self.hangman.errors}/{self.game_manager.max_errors}",
             True, RED if self.hangman.errors > self.game_manager.max_errors // 2 else WHITE
         )
-        self.screen.blit(errors_text, (10, info_y + 30))
+        self.screen.blit(errors_text, (10, info_y + 25))
 
-        # Чей ход
+        # Информация о боте
         if self.game_manager:
-            turn_text = self.font_small.render(
-                "Ваш ход!" if self.game_manager.my_turn else "Ход противника...",
-                True, GREEN if self.game_manager.my_turn else YELLOW
+            opp_errors_text = self.font_small.render(
+                f"Ошибки: {self.game_manager.opponent_errors}/{self.game_manager.max_errors}",
+                True, YELLOW
             )
-            self.screen.blit(turn_text, (WIDTH - 200, info_y))
+            opp_errors_rect = opp_errors_text.get_rect(topright=(WIDTH - 10, info_y))
+            self.screen.blit(opp_errors_text, opp_errors_rect)
 
-        # Таймер для сложного режима
+            if self.current_difficulty == "medium":
+                stats_text = self.font_tiny.render(
+                    "Бот: ~1-2 ошибки/3 хода", True, GRAY
+                )
+                stats_rect = stats_text.get_rect(topright=(WIDTH - 10, info_y + 50))
+                self.screen.blit(stats_text, stats_rect)
+            elif self.current_difficulty == "hard":
+                stats_text = self.font_tiny.render(
+                    "Бот: ~1 ошибка/3 хода", True, GRAY
+                )
+                stats_rect = stats_text.get_rect(topright=(WIDTH - 10, info_y + 50))
+                self.screen.blit(stats_text, stats_rect)
+
+        # Чей ход и сообщения
+        center_x = WIDTH // 2
+        message_y = 280
+
+        # Сначала проверяем, есть ли сообщение от бота (показываем 1.5 сек)
+        if self.bot_message and time.time() - self.bot_message_time < 1.5:
+            msg_text = self.font_medium.render(self.bot_message, True, YELLOW)
+            msg_rect = msg_text.get_rect(center=(center_x, message_y))
+            self.screen.blit(msg_text, msg_rect)
+        elif self.bot_message:
+            self.bot_message = None  # сообщение устарело
+        elif extra_message:
+            msg_text = self.font_medium.render(extra_message, True, YELLOW)
+            msg_rect = msg_text.get_rect(center=(center_x, message_y))
+            self.screen.blit(msg_text, msg_rect)
+        elif self.game_manager:
+            if self.game_manager.waiting_for_opponent:
+                turn_text = self.font_medium.render("Противник думает...", True, YELLOW)
+            elif self.game_manager.my_turn:
+                turn_text = self.font_medium.render("ВАШ ХОД!", True, GREEN)
+            else:
+                turn_text = self.font_medium.render("Ход противника...", True, YELLOW)
+            turn_rect = turn_text.get_rect(center=(center_x, message_y))
+            self.screen.blit(turn_text, turn_rect)
+
+        # Таймер
         if self.game_manager and self.game_manager.time_limit:
             time_left = self.game_manager.get_time_left()
             if time_left is not None:
@@ -1045,11 +1254,93 @@ class HangmanGame:
                     f"Время: {time_left // 60}:{time_left % 60:02d}",
                     True, color
                 )
-                self.screen.blit(time_text, (10, info_y + 60))
+                time_rect = time_text.get_rect(center=(center_x, message_y -30))
+                self.screen.blit(time_text, time_rect)
+    def draw_hangman(self, x, y, errors, is_opponent=False):
+        """Отрисовка виселицы с заданными координатами и количеством ошибок
+        is_opponent=True - рисует зеркально (справа налево)"""
+
+        if is_opponent:
+            # Зеркальная виселица для противника
+            # Основание
+            pygame.draw.line(self.screen, WHITE,
+                             (x + 150, y + 250), (x, y + 250), 3)  # перевернуто
+            # Столб
+            pygame.draw.line(self.screen, WHITE,
+                             (x + 100, y + 250), (x + 100, y + 50), 3)
+            # Перекладина
+            pygame.draw.line(self.screen, WHITE,
+                             (x + 100, y + 50), (x, y + 50), 3)  # перевернуто
+            # Веревка
+            pygame.draw.line(self.screen, WHITE,
+                             (x, y + 50), (x, y + 80), 3)  # перевернуто
+
+            # Рисуем части тела зеркально
+            if errors >= 1:  # Голова
+                pygame.draw.circle(self.screen, WHITE,
+                                   (x, y + 100), 15, 2)  # x без смещения вправо
+
+            if errors >= 2:  # Тело
+                pygame.draw.line(self.screen, WHITE,
+                                 (x, y + 115), (x, y + 170), 2)
+
+            if errors >= 3:  # Левая рука (зеркально)
+                pygame.draw.line(self.screen, WHITE,
+                                 (x, y + 130), (x + 30, y + 150), 2)  # +30 вместо -30
+
+            if errors >= 4:  # Правая рука (зеркально)
+                pygame.draw.line(self.screen, WHITE,
+                                 (x, y + 130), (x - 30, y + 150), 2)  # -30 вместо +30
+
+            if errors >= 5:  # Левая нога (зеркально)
+                pygame.draw.line(self.screen, WHITE,
+                                 (x, y + 170), (x + 30, y + 210), 2)  # +30 вместо -30
+
+            if errors >= 6:  # Правая нога (зеркально)
+                pygame.draw.line(self.screen, WHITE,
+                                 (x, y + 170), (x - 30, y + 210), 2)  # -30 вместо +30
+        else:
+            # Обычная виселица для игрока
+            # Основание
+            pygame.draw.line(self.screen, WHITE, (x + 50, y + 250),
+                             (x + 200, y + 250), 3)
+            # Столб
+            pygame.draw.line(self.screen, WHITE, (x + 100, y + 250),
+                             (x + 100, y + 50), 3)
+            # Перекладина
+            pygame.draw.line(self.screen, WHITE, (x + 100, y + 50),
+                             (x + 200, y + 50), 3)
+            # Веревка
+            pygame.draw.line(self.screen, WHITE, (x + 200, y + 50),
+                             (x + 200, y + 80), 3)
+
+            # Рисуем части тела
+            if errors >= 1:  # Голова
+                pygame.draw.circle(self.screen, WHITE,
+                                   (x + 200, y + 100), 15, 2)
+
+            if errors >= 2:  # Тело
+                pygame.draw.line(self.screen, WHITE,
+                                 (x + 200, y + 115), (x + 200, y + 170), 2)
+
+            if errors >= 3:  # Левая рука
+                pygame.draw.line(self.screen, WHITE,
+                                 (x + 200, y + 130), (x + 170, y + 150), 2)
+
+            if errors >= 4:  # Правая рука
+                pygame.draw.line(self.screen, WHITE,
+                                 (x + 200, y + 130), (x + 230, y + 150), 2)
+
+            if errors >= 5:  # Левая нога
+                pygame.draw.line(self.screen, WHITE,
+                                 (x + 200, y + 170), (x + 170, y + 210), 2)
+
+            if errors >= 6:  # Правая нога
+                pygame.draw.line(self.screen, WHITE,
+                                 (x + 200, y + 170), (x + 230, y + 210), 2)
 
     def draw_help(self):
-        """Отрисовка справки"""
-        # Фон
+        """Отрисовка справки с прокруткой"""
         self.screen.fill((245, 245, 220))
 
         # Заголовок
@@ -1061,47 +1352,89 @@ class HangmanGame:
         rules = [
             "Hangman (Виселица) - игра в угадывание слов.",
             "",
-            "Правила:",
+            "ПРАВИЛА:",
             "• Загадано случайное слово",
             "• Вы можете называть буквы алфавита",
             "• Если буква есть в слове - она открывается",
             "• Если буквы нет - рисуется часть виселицы",
             "• Игра продолжается пока не откроете всё слово",
-            "  или не сделаете 7 ошибок",
+            "  или не сделаете максимальное количество ошибок",
             "",
-            "Режимы сложности:",
+            "РЕЖИМЫ СЛОЖНОСТИ:",
             "• Легкий - 7 ошибок, без ограничения времени",
             "• Средний - 5 ошибок, без ограничения времени",
             "• Сложный - 5 ошибок, 3 минуты на слово",
             "",
-            "Онлайн режим:",
+            "ОНЛАЙН РЕЖИМ:",
             "• Игра с реальным противником",
             "• Слова могут отличаться на 1 букву",
             "• Ход переходит после ошибки",
+            "• Кто первый угадает слово - побеждает",
+            "",
+            "УПРАВЛЕНИЕ:",
+            "• Мышь - выбор букв и кнопок",
+            "• ESC - выход в меню",
+            "• Стрелки вверх/вниз - прокрутка",
+            "• Колесико мыши - прокрутка",
+            "",
+            "СОВЕТЫ:",
+            "• Начинайте с гласных букв",
+            "• Часто используемые буквы: А, Е, О, И, Н, Т",
+            "• Следите за количеством ошибок",
+            "• В сложном режиме следите за временем",
+            "",
+            "УДАЧНОЙ ИГРЫ!",
             "",
             "Нажмите ESC для возврата в меню"
         ]
 
-        y = 120
+        # Вычисляем максимальную прокрутку
+        total_height = len(rules) * 35 + 100
+        self.help_max_scroll = max(0, total_height - (HEIGHT - 100))
+
+        # Создаем поверхность для прокрутки
+        help_surface = pygame.Surface((WIDTH - 100, total_height))
+        help_surface.fill((245, 245, 220))
+
+        y = 0
         for line in rules:
-            if line.startswith("•"):
-                text = self.font_small.render(line, True, BLACK)
-            elif line.startswith("Режимы") or line.startswith("Онлайн"):
-                text = self.font_medium.render(line, True, BLUE)
-                y += 10
+            if line.startswith("ПРАВИЛА") or line.startswith("РЕЖИМЫ") or line.startswith("ОНЛАЙН") or line.startswith(
+                    "УПРАВЛЕНИЕ") or line.startswith("СОВЕТЫ"):
+                color = BLUE
+                font = self.font_medium
+            elif line.startswith("•"):
+                color = BLACK
+                font = self.font_small
             elif not line:
-                y += 10
+                y += 20
                 continue
             else:
-                text = self.font_small.render(line, True, BLACK)
+                color = BLACK
+                font = self.font_small
 
-            text_rect = text.get_rect(topleft=(100, y))
-            self.screen.blit(text, text_rect)
-            y += 30
+            text = font.render(line, True, color)
+            text_rect = text.get_rect(topleft=(50, y))
+            help_surface.blit(text, text_rect)
+            y += 35
+
+        # Отображаем часть поверхности с учетом прокрутки
+        self.screen.blit(help_surface, (0, 100 - self.help_scroll))
+
+        # Полоса прокрутки
+        if self.help_max_scroll > 0:
+            scroll_height = (HEIGHT - 150) * (HEIGHT - 150) / total_height
+            scroll_pos = 100 + (self.help_scroll / self.help_max_scroll) * (HEIGHT - 200 - scroll_height)
+            pygame.draw.rect(self.screen, GRAY, (WIDTH - 20, 100, 10, HEIGHT - 200))
+            pygame.draw.rect(self.screen, DARK_BLUE, (WIDTH - 20, scroll_pos, 10, scroll_height))
+
+        # Подсказка
+        hint = self.font_small.render("ESC - назад | Стрелки/колесико - прокрутка", True, GRAY)
+        hint_rect = hint.get_rect(center=(WIDTH // 2, HEIGHT - 30))
+        self.screen.blit(hint, hint_rect)
 
     def draw_records(self):
         """Отрисовка таблицы рекордов"""
-        # Фон
+        # Простой фон без лишних надписей
         self.screen.fill((20, 20, 40))
 
         # Заголовок
@@ -1110,26 +1443,28 @@ class HangmanGame:
         self.screen.blit(title, title_rect)
 
         # Заголовки колонок
-        headers = ["Место", "Игрок", "Счет", "Режим", "Длина слова", "Дата"]
-        x_positions = [50, 150, 300, 400, 520, 620]
+        headers = ["Место", "Игрок", "Счет", "Режим", "Длина", "Дата"]
+        x_positions = [50, 150, 300, 400, 550, 650]
+
+        # Рисуем рамку для таблицы
+        pygame.draw.rect(self.screen, (50, 50, 80), (-10, 90, 830, 400), 2)
 
         for i, header in enumerate(headers):
             text = self.font_small.render(header, True, YELLOW)
-            self.screen.blit(text, (x_positions[i], 120))
+            self.screen.blit(text, (x_positions[i], 100))
 
         # Рекорды
         if self.records:
-            y = 160
-            for i, record in enumerate(self.records):
+            y = 140
+            for i, record in enumerate(self.records[:8]):  # Показываем только 8 записей
                 login, score, game_mode, word_length, date = record
 
-                # Цвет для первых трех мест
                 if i == 0:
                     color = GOLD
                 elif i == 1:
-                    color = (192, 192, 192)  # Серебро
+                    color = (192, 192, 192)
                 elif i == 2:
-                    color = (205, 127, 50)  # Бронза
+                    color = (205, 127, 50)
                 else:
                     color = WHITE
 
@@ -1138,7 +1473,7 @@ class HangmanGame:
                 self.screen.blit(place_text, (x_positions[0], y))
 
                 # Игрок
-                name_text = self.font_small.render(login[:15], True, color)
+                name_text = self.font_small.render(login[:12], True, color)
                 self.screen.blit(name_text, (x_positions[1], y))
 
                 # Счет
@@ -1146,38 +1481,38 @@ class HangmanGame:
                 self.screen.blit(score_text, (x_positions[2], y))
 
                 # Режим
-                mode_text = self.font_small.render(game_mode, True, color)
+                mode_display = game_mode.replace("offline_", "офф ").replace("online_", "онл ")[:8]
+                mode_text = self.font_small.render(mode_display, True, color)
                 self.screen.blit(mode_text, (x_positions[3], y))
 
                 # Длина слова
                 length_text = self.font_small.render(str(word_length), True, color)
                 self.screen.blit(length_text, (x_positions[4], y))
 
-                # Дата (кратко)
+                # Дата (только число)
                 date_str = date.split()[0] if date else ""
                 date_text = self.font_small.render(date_str, True, color)
                 self.screen.blit(date_text, (x_positions[5], y))
 
-                y += 30
+                y += 35
         else:
             no_records = self.font_medium.render("Пока нет рекордов", True, GRAY)
             no_rect = no_records.get_rect(center=(WIDTH // 2, 300))
             self.screen.blit(no_records, no_rect)
 
-        # Подсказка
+        # Подсказка внизу
         hint = self.font_small.render("Нажмите ESC для возврата", True, GRAY)
         hint_rect = hint.get_rect(center=(WIDTH // 2, HEIGHT - 50))
         self.screen.blit(hint, hint_rect)
 
     def draw_game_over(self):
         """Отрисовка экрана окончания игры"""
-        # Фон с затемнением
+        # Затемнение фона
         overlay = pygame.Surface((WIDTH, HEIGHT))
         overlay.set_alpha(200)
         overlay.fill((0, 0, 0))
         self.screen.blit(overlay, (0, 0))
 
-        # Результат
         if self.game_manager and self.game_manager.won:
             result_text = self.font_large.render("ПОБЕДА!", True, GREEN)
             score_text = self.font_medium.render(f"Счет: {self.game_manager.score}", True, GOLD)
@@ -1192,7 +1527,6 @@ class HangmanGame:
         score_rect = score_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 30))
         self.screen.blit(score_text, score_rect)
 
-        # Инструкции
         again_text = self.font_small.render("Нажмите ПРОБЕЛ чтобы сыграть снова", True, GRAY)
         again_rect = again_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 50))
         self.screen.blit(again_text, again_rect)
